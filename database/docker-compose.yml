@@ -1,0 +1,39 @@
+#Docker-compose файл для создания контейнера с Бд. Для mission
+
+version: '1.0'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: 'postgres'
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: private_password
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+        - ./assets/init_db:/docker-entrypoint-initdb.d
+        - ./assets/db_data/postgres:/var/lib/postgresql/data
+    networks:
+        - postgres
+    ports:
+      - 5432:5432
+  mongo:
+      image: mongo:6.0.3
+      container_name: 'mongodb'
+      environment:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password
+          MONGO_INITDB_DATABASE: mission_db
+      volumes:
+          - ./assets/db_data/mongo/db:/data/db
+          - ./assets/db_data/mongo/configdb:/data/configdb
+      networks:
+          - mongo
+      ports:
+        - 27017:27017
+networks:
+    postgres:
+        driver: bridge
+    mongo:
+        driver: bridge
