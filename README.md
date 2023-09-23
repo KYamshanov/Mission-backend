@@ -1,4 +1,5 @@
 # Backend projects for mission project.
-Constains:
+Contains:
 1) Authorization
-2) ~~Gateway. Will be in feature~~
+2) Gateway
+3) Points (task manager)
