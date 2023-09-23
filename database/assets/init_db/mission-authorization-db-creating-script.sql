@@ -11,14 +11,14 @@ DROP TABLE IF EXISTS authorizationConsent CASCADE;
 
 CREATE TABLE users
 (
-    username VARCHAR(50) PRIMARY KEY,
+    username VARCHAR(36) PRIMARY KEY,
     password VARCHAR(500) NOT NULL,
     enabled  BOOLEAN      NOT NULL
 );
 
 CREATE TABLE authorities
 (
-    username  VARCHAR(50) PRIMARY KEY REFERENCES users (username),
+    username  VARCHAR(36) PRIMARY KEY REFERENCES users (username),
     authority VARCHAR(50) NOT NULL
 );
 
