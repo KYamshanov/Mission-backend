@@ -11,14 +11,15 @@ DROP TABLE IF EXISTS authorizationConsent CASCADE;
 
 CREATE TABLE users
 (
-    username VARCHAR(36) PRIMARY KEY,
+    id       VARCHAR(32) PRIMARY KEY,
+    username VARCHAR(30)  NOT NULL UNIQUE,
     password VARCHAR(500) NOT NULL,
     enabled  BOOLEAN      NOT NULL
 );
 
 CREATE TABLE authorities
 (
-    username  VARCHAR(36) PRIMARY KEY REFERENCES users (username),
+    username  VARCHAR(32) PRIMARY KEY REFERENCES users (username),
     authority VARCHAR(50) NOT NULL
 );
 
@@ -90,8 +91,9 @@ CREATE TABLE authorizationConsent
     PRIMARY KEY (registeredClientId, principalName)
 );
 
-INSERT INTO users (username, password, enabled)
-VALUES ('user', '{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW', true);
+INSERT INTO users (id, username, password, enabled)
+VALUES ('04b89e9ef625402e9758d942d486e7bb', 'user',
+        '{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW', true);
 
 INSERT INTO authorities (username, authority)
 VALUES ('user', 'ROLE_DEFAULT');
