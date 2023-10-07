@@ -11,6 +11,14 @@ spring:
           issuer-uri: http://localhost:9000
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods:
+              - GET
+              - POST
       routes:
         - id: point
           uri: http://localhost:8080
