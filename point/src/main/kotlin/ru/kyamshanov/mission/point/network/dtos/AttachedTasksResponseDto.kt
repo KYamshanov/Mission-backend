@@ -5,15 +5,13 @@ import ru.kyamshanov.mission.point.domain.models.TaskStatus
 import java.time.LocalDateTime
 
 data class AttachedTasksResponseDto(
-    val items: List<Task>
+    val items: List<TaskSlim>
 ) {
 
-    data class Task(
+    data class TaskSlim(
         val id: String? = null,
         val title: String,
-        val description: String,
         val creationTime: LocalDateTime,
-        val updateTime: LocalDateTime? = null,
         val completionTime: LocalDateTime? = null,
         val priority: TaskPriority? = null,
         val status: TaskStatus = TaskStatus.CREATED,
