@@ -1,0 +1,54 @@
+version: '1.0'
+
+services:
+  auth:
+    build: /authorization
+    container_name: 'auth'
+    networks:
+      - auth-server
+      - database_postgres
+      - gateway
+    ports:
+      - "127.0.0.1:6543:80"
+    environment:
+      SERVER_PORT: 80
+  gateway:
+    build: /gateway
+    container_name: 'gateway'
+    ports:
+      - 3456:80
+    networks:
+      - gateway
+      - auth-server
+    volumes:
+      - ./assets:/app/assets
+    environment:
+      SERVER_PORT: 80
+  point:
+    build: /point
+    container_name: 'point'
+    networks:
+      - database_postgres
+      - backend
+      - gateway
+    environment:
+      SERVER_PORT: 80
+networks:
+  database_postgres:
+    name: database_postgres
+    external: true
+  database_mongo:
+    name: database_mongo
+    external: true
+  gateway:
+    driver: bridge
+    name: gateway
+  backend:
+    driver: bridge
+    name: backend
+  auth-server:
+    driver: bridge
+    name: auth-server
+  hostnet:
+    external:
+      name: host
