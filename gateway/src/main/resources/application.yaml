@@ -8,7 +8,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
+          issuer-uri: http://auth
   cloud:
     gateway:
       globalcors:
@@ -21,8 +21,12 @@ spring:
               - POST
       routes:
         - id: point
-          uri: http://localhost:8080
+          uri: http://point:80
           predicates:
             - Path=/point/**
           filters:
             - RemoveRequestHeader=Cookie
+        - id: oauth
+          uri: http://auth:80
+          predicates:
+            - Path=/oauth2/**

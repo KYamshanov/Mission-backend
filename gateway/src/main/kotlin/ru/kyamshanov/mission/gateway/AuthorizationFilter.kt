@@ -19,8 +19,10 @@ internal class AuthorizationFilter(
     override fun filter(serverWebExchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> =
         mono {
             val requestBuilder = serverWebExchange.request.mutate()
-            val par = serverWebExchange.awaitPrincipal<JwtAuthenticationToken>()
-            requestBuilder.appendHeader(USER_ID_HEADER_KEY, par.name)
+            runCatching {
+                val par = serverWebExchange.awaitPrincipal<JwtAuthenticationToken>()
+                requestBuilder.appendHeader(USER_ID_HEADER_KEY, par.name)
+            }.onFailure { it.printStackTrace() }
             requestBuilder
         }.flatMap { requestBuilder ->
             chain.filter(serverWebExchange.mutate().request(requestBuilder.build()).build())

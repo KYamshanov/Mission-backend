@@ -9,6 +9,8 @@ import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
 import ru.kyamshanov.mission.point.network.dtos.AttachedTasksResponseDto
 import ru.kyamshanov.mission.point.network.dtos.CreateTaskRequestDto
 import ru.kyamshanov.mission.point.network.dtos.CreateTaskResponseDto
+import ru.kyamshanov.mission.point.network.dtos.GetTaskRsDto
+import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 
 @RestController
@@ -25,12 +27,10 @@ class PrivateController(
             AttachedTasksResponseDto(
                 taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf())
                     .map {
-                        AttachedTasksResponseDto.Task(
+                        AttachedTasksResponseDto.TaskSlim(
                             id = it.id,
                             title = it.title,
-                            description = it.description,
                             creationTime = it.creationTime,
-                            updateTime = it.updateTime,
                             completionTime = it.completionTime,
                             priority = it.priority,
                             status = it.status
@@ -56,5 +56,37 @@ class PrivateController(
             CreateTaskResponseDto(taskCrudRepository.save(entity).id),
             HttpStatus.OK
         )
+    }
+
+    @GetMapping("/get")
+    suspend fun getTask(
+        @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
+        @RequestParam(required = true) id: String
+    ): ResponseEntity<GetTaskRsDto> {
+        return ResponseEntity(
+            (taskCrudRepository.findById(id) ?: throw IllegalArgumentException("Task was not found"))
+                .let {
+                    GetTaskRsDto(
+                        id = it.id,
+                        title = it.title,
+                        creationTime = it.creationTime,
+                        completionTime = it.completionTime,
+                        priority = it.priority,
+                        status = it.status,
+                        description = it.description,
+                        updateTime = it.updateTime
+                    )
+                },
+            HttpStatus.OK
+        )
+    }
+
+    @DeleteMapping("/delete")
+    suspend fun deleteTask(
+        @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
+        @RequestParam(required = true, name = "id") taskId: String
+    ): ResponseEntity<Unit> {
+        taskCrudRepository.deleteByIdAndOwner(taskId, userId)
+        return ResponseEntity(HttpStatus.OK)
     }
 }
