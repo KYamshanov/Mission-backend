@@ -25,6 +25,8 @@ data class TaskEntity(
     val status: TaskStatus = TaskStatus.CREATED,
     @Column("owner")
     val owner: String,
+    @Column("type")
+    val type: TaskType? = null,
 
     /** Первичный ключ - Идентификатор */
     @Id
