@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration
 import ru.kyamshanov.mission.point.database.entities.TaskPriority
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
+import ru.kyamshanov.mission.point.domain.models.TaskType
 import java.time.Duration
 
 @Configuration
@@ -40,6 +41,7 @@ class EnumsConfig(
                     EnumCodec.builder()
                         .withEnum("task_priority", TaskPriority::class.java)
                         .withEnum("task_status", TaskStatus::class.java)
+                        .withEnum("task_type", TaskType::class.java)
                         .build()
                 )
                 .build()
@@ -54,7 +56,8 @@ class EnumsConfig(
 
     override fun getCustomConverters(): MutableList<Any> = mutableListOf(
         TaskPriorityConverter(),
-        TaskStatusConverter()
+        TaskStatusConverter(),
+        TaskTypeConverter(),
     )
 
 }
