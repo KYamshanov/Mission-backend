@@ -7,4 +7,6 @@ import ru.kyamshanov.mission.point.domain.models.TaskEntity
 interface TaskCrudRepository : CoroutineCrudRepository<TaskEntity, String> {
 
     fun getAllByOwner(ownerId: String): Flow<TaskEntity>
+
+    suspend fun deleteByIdAndOwner(id: String, owner: String)
 }

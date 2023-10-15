@@ -80,4 +80,13 @@ class PrivateController(
             HttpStatus.OK
         )
     }
+
+    @DeleteMapping("/delete")
+    suspend fun deleteTask(
+        @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
+        @RequestParam(required = true, name = "id") taskId: String
+    ): ResponseEntity<Unit> {
+        taskCrudRepository.deleteByIdAndOwner(taskId, userId)
+        return ResponseEntity(HttpStatus.OK)
+    }
 }
