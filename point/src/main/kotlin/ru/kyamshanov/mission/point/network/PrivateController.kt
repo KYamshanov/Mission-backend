@@ -8,11 +8,7 @@ import org.springframework.web.bind.annotation.*
 import ru.kyamshanov.mission.point.domain.models.TaskEntity
 import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
-import ru.kyamshanov.mission.point.domain.models.TaskType
-import ru.kyamshanov.mission.point.network.dtos.AttachedTasksResponseDto
-import ru.kyamshanov.mission.point.network.dtos.CreateTaskRequestDto
-import ru.kyamshanov.mission.point.network.dtos.CreateTaskResponseDto
-import ru.kyamshanov.mission.point.network.dtos.GetTaskRsDto
+import ru.kyamshanov.mission.point.network.dtos.*
 import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 
@@ -37,7 +33,7 @@ class PrivateController(
                             completionTime = it.completionTime,
                             priority = it.priority,
                             status = it.status,
-                            type = it.type,
+                            type = it.type.toDto(),
                         )
                     }),
             HttpStatus.OK
@@ -79,7 +75,7 @@ class PrivateController(
                         status = it.status,
                         description = it.description,
                         updateTime = it.updateTime,
-                        type = it.type
+                        type = it.type.toDto()
                     )
                 },
             HttpStatus.OK
@@ -100,9 +96,9 @@ class PrivateController(
     suspend fun setTaskType(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
         @RequestParam(required = true, name = "id") taskId: String,
-        @RequestParam(required = true, name = "type") taskType: TaskType
+        @RequestParam(required = true, name = "type") taskType: TaskTypeDto
     ): ResponseEntity<Unit> {
-        taskCrudRepository.updateTaskType(taskId, userId, taskType).toCollection(mutableListOf())
+        taskCrudRepository.updateTaskType(taskId, userId, taskType.toDomain()).toCollection(mutableListOf())
             .also { assert(it.size == 1) { "Less or more one task have been updated. Count: ${it.size}" } }
         return ResponseEntity(HttpStatus.OK)
     }
