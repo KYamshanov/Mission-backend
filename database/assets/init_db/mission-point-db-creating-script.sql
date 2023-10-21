@@ -6,7 +6,7 @@ DROP TYPE IF EXISTS task_status CASCADE;
   Скрипт для создания таблиц tasks
  */
 
-CREATE TYPE task_priority AS ENUM ('PRIMARY');
+CREATE TYPE task_priority AS ENUM ('PRIMARY','LOW');
 CREATE TYPE task_status AS ENUM ('CREATED','IN_PROCESSING','COMPLETED');
 CREATE TYPE task_type AS ENUM ('TODAYS','WEEKS');
 

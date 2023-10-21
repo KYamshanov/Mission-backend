@@ -14,4 +14,5 @@ data class GetTaskRsDto(
     val priority: TaskPriority? = null,
     val status: TaskStatus,
     val type: TaskTypeDto,
+    val editingRules: EditingRulesDto?
 )
