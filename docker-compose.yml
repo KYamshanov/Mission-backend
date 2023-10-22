@@ -9,7 +9,7 @@ services:
       - database_postgres
       - gateway
     ports:
-      - "127.0.0.1:6543:80"
+      - 6543:80
     environment:
       SERVER_PORT: 80
   gateway:

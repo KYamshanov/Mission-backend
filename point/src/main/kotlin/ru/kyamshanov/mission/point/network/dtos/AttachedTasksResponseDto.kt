@@ -2,7 +2,6 @@ package ru.kyamshanov.mission.point.network.dtos
 
 import ru.kyamshanov.mission.point.database.entities.TaskPriority
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
-import ru.kyamshanov.mission.point.domain.models.TaskType
 import java.time.LocalDateTime
 
 data class AttachedTasksResponseDto(
@@ -16,6 +15,6 @@ data class AttachedTasksResponseDto(
         val completionTime: LocalDateTime? = null,
         val priority: TaskPriority? = null,
         val status: TaskStatus = TaskStatus.CREATED,
-        val type: TaskType?
+        val type: TaskTypeDto
     )
 }
