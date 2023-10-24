@@ -5,6 +5,9 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 server:
   port: 6543
+  servlet:
+    session:
+      timeout: 10s
 
 spring:
   datasource:
@@ -12,4 +15,4 @@ spring:
     username: postgres
     password: private_password
   session:
-    timeout: 1
+    timeout: 10s
