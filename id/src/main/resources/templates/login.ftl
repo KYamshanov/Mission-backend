@@ -27,6 +27,10 @@
                value="HC20TnCvAF5UQube6bprHpwuOhpBrB4oK56tC7bS1o26f4-jLh-MdxPKYml5dNHt2ZdfKa4XF3sizigFSqacbtfh5bqCSb3H"/>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
     </form>
+
+    <form class="form-signin" method="get" action="/auth/github">
+        <button type="submit">Sign in by github</button>
+    </form>
 </div>
 </body>
 </html>

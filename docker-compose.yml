@@ -2,7 +2,7 @@ version: '1.0'
 
 services:
   auth:
-    build: /authorization
+    build: /id
     container_name: 'auth'
     networks:
       - auth-server
@@ -12,6 +12,8 @@ services:
       - 6543:80
     environment:
       SERVER_PORT: 80
+      clientId: ${clientId}
+      clientSecret: ${clientSecret}
   gateway:
     build: /gateway
     container_name: 'gateway'
@@ -33,6 +35,8 @@ services:
       - gateway
     environment:
       SERVER_PORT: 80
+    ports:
+      - 8081:80
 networks:
   database_postgres:
     name: database_postgres

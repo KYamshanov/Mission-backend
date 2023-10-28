@@ -1,0 +1,17 @@
+ktor:
+  deployment:
+    port: $SERVER_PORT
+  application:
+    modules:
+      - ru.kyamshanov.mission.ApplicationKt.module
+oauth:
+  issuer: "http://127.0.0.1:6543"
+  github:
+    urlProvider: "http://127.0.0.1:6543/github/authorized"
+    clientId: $clientId
+    clientSecret: $clientSecret
+database:
+  postgresql:
+    url: $postgresql_url
+    user: postgres
+    password: private_password
