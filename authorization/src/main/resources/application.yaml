@@ -3,10 +3,13 @@ logging:
     org.springframework.security: trace
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: trace
-
+server:
+  port: 6543
 
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/postgres
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: private_password
+  session:
+    timeout: 1
