@@ -1,4 +1,4 @@
-# Backend projects for mission project.
+# Backend for mission project.
 Contains:
 1) ~~Authorization (LEGACY)~~
 2) Gateway
