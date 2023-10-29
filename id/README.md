@@ -16,7 +16,12 @@
 ## Documentation in pictures
 
 Алгоритм авторизации/authorization scheme:
-![plot](./images/auth_scheme.png)
+
+![auth_scheme](./resources/id-scheme.png)
+
+Таблица клиентов (mission-desktop/mission-android)
+
+![table_client](./resources/db_scheme.png)
 
 # Road map
 1) ~~make simple application~~
