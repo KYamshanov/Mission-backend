@@ -11,42 +11,31 @@ import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.freemarker.*
 import io.ktor.server.netty.*
-import ru.kyamshanov.mission.plugins.configureRouting
+import kotlinx.serialization.json.Json
+import ru.kyamshanov.mission.plugins.*
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
-}
+/**
+ * Main function for initialize application
+ */
+fun main(args: Array<String>): Unit = EngineMain.main(args)
 
-val applicationHttpClient = HttpClient(CIO) {
+
+/**
+ * Http client for make requests
+ */
+private val applicationHttpClient = HttpClient(CIO) {
     install(ContentNegotiation) {
-        json()
+        json(Json { ignoreUnknownKeys = true })
     }
 }
 
 fun Application.module(httpClient: HttpClient = applicationHttpClient) {
-    install(FreeMarker) {
-        templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
+    install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
+        json()
     }
-    install(Authentication) {
-        oauth("auth-oauth-github") {
-            urlProvider = { "http://127.0.0.1:8080/desktop/authorized" }
-            providerLookup = {
-                OAuthServerSettings.OAuth2ServerSettings(
-                    name = "google",
-                    authorizeUrl = "https://github.com/login/oauth/authorize",
-                    accessTokenUrl = "https://github.com/login/oauth/access_token",
-                    requestMethod = HttpMethod.Get,
-                    clientId = "SECRET",
-                    clientSecret = "SECRET",
-                    defaultScopes = listOf("read:user"),
-                    onStateCreated = { call, state ->
-                        //redirects[state] = call.request.queryParameters["redirectUrl"]!!
-                    }
-                )
-            }
-            client = httpClient
-        }
-    }
-    configureRouting()
+    dbConnect()
+    configureSession()
+    freeMarker()
+    authentication(httpClient)
+    configureRouting(httpClient)
 }
