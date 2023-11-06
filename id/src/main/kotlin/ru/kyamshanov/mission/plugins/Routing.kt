@@ -13,12 +13,14 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.kyamshanov.mission.authorization.Auth
+import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.*
 import ru.kyamshanov.mission.tables.AuthorizationTable
-import ru.kyamshanov.mission.tables.ServiceMetadata
 import java.security.KeyPair
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -29,7 +31,7 @@ import java.util.*
 val keyPair: KeyPair = Jwts.SIG.RS256.keyPair().build() //or RS384, RS512, PS256, etc...
 val kid = UUID.randomUUID().toString()
 
-fun Application.configureRouting(httpClient: HttpClient) {
+fun Application.configureRouting(httpClient: HttpClient, auth: Auth) {
     routing {
         get("/.well-known/openid-configuration") {
             val issuer = this@configureRouting.environment.config.property("oauth.issuer").getString()
@@ -92,106 +94,19 @@ fun Application.configureRouting(httpClient: HttpClient) {
         }
 
         get("/oauth2/authorize") {
-            call.sessions.set(
-                OAuthSessionConfig(
-                    requireNotNull(call.parameters["code_challenge"]),
-                    requireNotNull(call.parameters["scope"]),
-                    requireNotNull(call.parameters["redirect_uri"]),
-                    requireNotNull(call.parameters["client_id"]),
-                )
-            )
-            call.respondTemplate("login.ftl")
+            auth.authorize(this)
         }
 
         post("/oauth2/token") {
-            val formParameters = call.receiveParameters()
-            val authCode: String = requireNotNull(formParameters["code"])
-            val codeVerifier: String = requireNotNull(formParameters["code_verifier"])
-            val codeChallenge: String
-            val token: String
-            val scopes: String
-
-
-            println("authCode")
-
-            transaction {
-                AuthorizationTable.select {
-                    AuthorizationTable.authCode eq authCode
-                }.limit(1).single()
-            }.also {
-                codeChallenge = it[AuthorizationTable.codeChallenge]
-                token = requireNotNull(it[AuthorizationTable.serviceMetadata].token)
-                scopes = it[AuthorizationTable.scopes]
-            }
-
-            assert(getCodeChallenge(codeVerifier) == codeChallenge)
-
-            val githubUserInfo = httpClient.get("https://api.github.com/user") {
-                header("Accept", "application/vnd.github+json")
-                header("X-GitHub-Api-Version", "2022-11-28")
-                header("Authorization", "Bearer $token")
-            }.body<GithubUserRsDto>()
-
-            println("UserLogin: ${githubUserInfo.login}")
-
-
-            //  val key: SecretKey = keyPair.private. // or RSA or EC PublicKey or PrivateKey
-            val issuer = this@configureRouting.environment.config.property("oauth.issuer").getString()
-
-            val accessToken = Jwts.builder()
-                .header()
-                .keyId(kid)
-                .and()
-                .subject(githubUserInfo.login)
-                .audience().add("desktop-client")
-                .and()
-                .claim("scope", "openid")
-                .claim("iss", issuer)
-                .claim("exp", System.currentTimeMillis() + (1000 * 60))
-                .signWith(keyPair.private)
-                .compact()
-
-            val response = TokensRsDto(
-                accessToken = accessToken,
-                refreshToken = generateNewToken(),
-                scope = "scope",
-                tokenType = "Bearer",
-                expiresIn = System.currentTimeMillis()
-            )
-            call.respond(response)
+            auth.token(this)
         }
 
 
         authenticate("auth-oauth-github") {
-            get("/auth/github") {
-                println("Regirect")
-                // Redirects to 'authorizeUrl' automatically
-            }
+            get("/auth/github") {}
 
             get("/github/authorized") {
-                val principal: OAuthAccessTokenResponse.OAuth2? = call.principal()
-                println("Github cccess token: ${principal?.accessToken}")
-                println("State: ${principal?.state}")
-
-                val oAuthConfig = requireNotNull(call.sessions.get<OAuthSessionConfig>())
-                call.sessions.clear<OAuthSessionConfig>()
-
-                val authorizationCode = generateNewToken()
-
-                transaction {
-                    AuthorizationTable.insert {
-                        it[service] = "github"
-                        it[authCode] = authorizationCode
-                        it[scopes] = oAuthConfig.scopes
-                        it[serviceMetadata] = ServiceMetadata(token = principal?.accessToken)
-                        it[createdAt] = LocalDateTime.now()
-                        it[updatedAt] = LocalDateTime.now()
-                        it[codeChallenge] = oAuthConfig.codeChallenge
-                        it[enabled] = true
-                    }
-                }
-
-                call.respondRedirect("${oAuthConfig.callbackURL}?code=${authorizationCode}")
+                auth.authorizedBy(SocialService.GITHUB, this)
             }
         }
     }
