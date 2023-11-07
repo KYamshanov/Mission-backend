@@ -19,7 +19,7 @@
 
 ![auth_scheme](./resources/id-scheme.png)
 
-Таблица клиентов (mission-desktop/mission-android)
+Схема базы данных
 
 ![table_client](./resources/db_scheme.png)
 
@@ -32,3 +32,7 @@
 6) auth with login-form
 7) registration users
 8) improve security
+
+# Prototyping
+
+![raw scheme](./resources/raw_scheme.png)
