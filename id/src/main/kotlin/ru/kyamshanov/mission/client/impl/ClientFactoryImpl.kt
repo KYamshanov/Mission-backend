@@ -4,6 +4,7 @@ import ru.kyamshanov.mission.client.Client
 import ru.kyamshanov.mission.client.ClientFactory
 import ru.kyamshanov.mission.client.ClientInMemoryKeeper
 import ru.kyamshanov.mission.client.ClientStorage
+import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 
 class ClientFactoryImpl(
     clientStorage: ClientStorage,

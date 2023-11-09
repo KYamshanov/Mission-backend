@@ -13,15 +13,16 @@ class CodeAuthorizeDelegate(
     private val scope: String,
     private val redirectUrl: String,
 ) : AuthorizeDelegate {
-    override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) = pipeline.run {
-        call.sessions.set(
-            OAuthSessionConfig(
-                requireNotNull(call.parameters["code_challenge"]),
-                scope,
-                redirectUrl,
-                clientId,
+    override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
+        pipeline.run {
+            call.sessions.set(
+                OAuthSessionConfig(
+                    requireNotNull(call.parameters["code_challenge"]),
+                    scope,
+                    redirectUrl,
+                    clientId,
+                )
             )
-        )
-        call.respondTemplate("login.ftl")
-    }
+            call.respondTemplate("login.ftl")
+        }
 }

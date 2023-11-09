@@ -6,6 +6,7 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.json.json
+import ru.kyamshanov.mission.client.models.SocialService
 
 
 /**
@@ -18,6 +19,6 @@ import org.jetbrains.exposed.sql.json.json
  */
 object ExAuthTable : Table(name = "mission-id.ex_auth") {
     val userId = varchar("user_id", 36)
-    val socialService = varchar("social_service_id", 36)
+    val socialService = socialServiceEnumeration("social_service_id")
     val externalUserId = varchar("external_user_id", 128)
 }

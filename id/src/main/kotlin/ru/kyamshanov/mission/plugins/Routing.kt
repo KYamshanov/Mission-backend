@@ -105,9 +105,7 @@ fun Application.configureRouting(httpClient: HttpClient, auth: Auth) {
         authenticate("auth-oauth-github") {
             get("/auth/github") {}
 
-            get("/github/authorized") {
-                auth.authorizedBy(SocialService.GITHUB, this)
-            }
+            get("/github/authorized") { auth.authorizedBy(SocialService.GITHUB, this) }
         }
     }
 }

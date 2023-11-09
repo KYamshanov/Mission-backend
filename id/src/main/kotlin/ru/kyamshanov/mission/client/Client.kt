@@ -1,6 +1,7 @@
 package ru.kyamshanov.mission.client
 
 import ru.kyamshanov.mission.client.models.SocialService
+import ru.kyamshanov.mission.identification.IdentificationService
 import java.util.UUID
 import kotlin.jvm.Throws
 
@@ -8,9 +9,9 @@ interface Client {
 
     val clientId: String
 
-    fun authorize(responseType: String, scope: String): Result<AuthorizeDelegate>
+    val identificationServices: Map<SocialService, IdentificationService>
 
-    fun token(grantType: String, issuerUrl: String): Result<TokenDelegate>
+    fun authorize(responseType: String, scope: String): Result<AuthorizeDelegate>
 
     fun authorizedBy(service: SocialService): Result<AuthorizedDelegate>
 

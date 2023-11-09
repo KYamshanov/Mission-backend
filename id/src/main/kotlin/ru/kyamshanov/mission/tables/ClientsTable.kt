@@ -2,9 +2,14 @@ package ru.kyamshanov.mission.tables
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.json.json
+import ru.kyamshanov.mission.tables.Authorities.entityId
 
 
 /**
@@ -23,7 +28,10 @@ import org.jetbrains.exposed.sql.json.json
  *     metadata                      JSON      DEFAULT NULL
  * );
  */
-object ClientsTable : UUIDTable(name = "mission-id.clients") {
+object ClientsTable : IdTable<String>(name = "mission-id.clients") {
+    override val id: Column<EntityID<String>> = varchar("id", 32).entityId()
+    override val primaryKey = PrimaryKey(id)
+
     val redirectUrl = varchar("redirect_url", 200)
     val scopes = varchar("scopes", 1000)
     val issuedAt = datetime("issued_at")

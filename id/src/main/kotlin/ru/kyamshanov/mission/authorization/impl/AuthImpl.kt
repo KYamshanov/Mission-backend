@@ -3,13 +3,17 @@ package ru.kyamshanov.mission.authorization.impl
 import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import ru.kyamshanov.mission.authorization.Auth
 import ru.kyamshanov.mission.client.ClientFactory
+import ru.kyamshanov.mission.client.delegates.AuthorizationCodeTokenDelegate
+import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
+import kotlin.requireNotNull
 
 class AuthImpl(
     private val clientFactory: ClientFactory,
@@ -33,11 +37,21 @@ class AuthImpl(
 
     override suspend fun token(pipeline: PipelineContext<Unit, ApplicationCall>) {
         pipeline.runCatching {
-            val clientId = requireNotNull(call.parameters["client_id"])
-            val grantType = requireNotNull(call.parameters["grant_type"])
+            val formParameters = call.receiveParameters()
+            val grantType =
+                requireNotNull(formParameters["grant_type"].toString()).let { str -> AuthorizationGrantTypes.entries.first { it.stringValue == str } }
 
-            val client = clientFactory.create(clientId).getOrThrow()
-            client.token(grantType, issuerUrl).getOrThrow().execute(this, httpClient)
+            val d = when (grantType) {
+                AuthorizationGrantTypes.AUTHORIZATION_CODE -> AuthorizationCodeTokenDelegate(
+                    issuerUrl,
+                    clientFactory,
+                    formParameters
+                )
+
+                AuthorizationGrantTypes.REFRESH_TOKEN -> TODO()
+            }
+
+            d.execute(this, httpClient)
         }.onFailure {
             it.printStackTrace()
             pipeline.call.respond(HttpStatusCode.InternalServerError)

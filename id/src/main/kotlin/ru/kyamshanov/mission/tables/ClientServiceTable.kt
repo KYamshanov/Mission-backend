@@ -1,6 +1,7 @@
 package ru.kyamshanov.mission.tables
 
 import org.jetbrains.exposed.sql.Table
+import ru.kyamshanov.mission.client.models.SocialService
 
 
 /**
@@ -13,5 +14,6 @@ import org.jetbrains.exposed.sql.Table
 object ClientServiceTable : Table(name = "mission-id.client_service") {
 
     val clientId = varchar("client_id", 36)
-    val socialServiceId = varchar("social_service_id", 36)
+    val socialServiceId = socialServiceEnumeration("social_service_id")
+    val enabled = bool("enabled")
 }

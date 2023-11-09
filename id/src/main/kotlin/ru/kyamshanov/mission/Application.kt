@@ -12,6 +12,12 @@ import io.ktor.server.engine.*
 import io.ktor.server.freemarker.*
 import io.ktor.server.netty.*
 import kotlinx.serialization.json.Json
+import ru.kyamshanov.mission.authorization.impl.AuthImpl
+import ru.kyamshanov.mission.client.impl.ClientFactoryImpl
+import ru.kyamshanov.mission.client.impl.ClientInMemoryKeeperImpl
+import ru.kyamshanov.mission.client.impl.ClientStorageImpl
+import ru.kyamshanov.mission.identification.GithubIdentification
+import ru.kyamshanov.mission.identification.IdentificationServiceFactoryImpl
 import ru.kyamshanov.mission.plugins.*
 
 /**
@@ -37,5 +43,17 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     configureSession()
     freeMarker()
     authentication(httpClient)
-    configureRouting(httpClient)
+    val issuer = this.environment.config.property("oauth.issuer").getString()
+
+    configureRouting(
+        httpClient, AuthImpl(
+            ClientFactoryImpl(
+                ClientStorageImpl(
+                    IdentificationServiceFactoryImpl(
+                        GithubIdentification(httpClient)
+                    )
+                ), ClientInMemoryKeeperImpl()
+            ), httpClient, issuer
+        )
+    )
 }

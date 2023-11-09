@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.json.json
+import ru.kyamshanov.mission.client.models.SocialService
 
 /**
  * CREATE TABLE "mission-id".authorization
@@ -29,6 +30,7 @@ import org.jetbrains.exposed.sql.json.json
 object AuthorizationTable : UUIDTable(name = "mission-id.authorization") {
     val clientId = varchar("client_id", 36)
     val userId = varchar("user_id", 36)
+    val issuedAt = datetime("issued_at")
     val authorizationGrantType = varchar("authorization_grant_type", 200)
     val authorizationMetadata = json<AuthorizationMetadata>("authorization_metadata", Json { prettyPrint = true })
     val authenticationCode = varchar("authentication_code", 128)
@@ -38,10 +40,10 @@ object AuthorizationTable : UUIDTable(name = "mission-id.authorization") {
     val accessTokenValue = varchar("access_token_value", 4000)
     val accessTokenIssuedAt = datetime("access_token_issued_at")
     val accessTokenExpiresAt = datetime("access_token_expires_at")
-    val refreshTokenValue = varchar("access_token_value", 4000)
-    val refreshTokenIssuedAt = datetime("access_token_issued_at")
-    val refreshTokenExpiresAt = datetime("access_token_expires_at")
-    val socialService = varchar("social_service", 36)
+    val refreshTokenValue = varchar("refresh_token_value", 4000)
+    val refreshTokenIssuedAt = datetime("refresh_token_issued_at")
+    val refreshTokenExpiresAt = datetime("refresh_token_expires_at")
+    val socialService = socialServiceEnumeration("social_service")
 }
 
 @Serializable

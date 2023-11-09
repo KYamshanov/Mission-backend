@@ -1,6 +1,6 @@
 package ru.kyamshanov.mission.client.models
 
-enum class SocialService(val code: String) {
+enum class SocialService {
 
-    GITHUB("github"),
+    GITHUB,
 }

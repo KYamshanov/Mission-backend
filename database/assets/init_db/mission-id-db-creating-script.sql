@@ -8,8 +8,8 @@ DROP TABLE IF EXISTS "mission-id".credential CASCADE;
 DROP TABLE IF EXISTS "mission-id".ex_auth CASCADE;
 DROP TABLE IF EXISTS "mission-id".user_authorities CASCADE;
 DROP TABLE IF EXISTS "mission-id".clients CASCADE;
-DROP TABLE IF EXISTS "mission-id".social_service CASCADE;
 DROP TABLE IF EXISTS "mission-id".client_service CASCADE;
+DROP TYPE IF EXISTS "mission-id".social_service CASCADE;
 
 CREATE TABLE "mission-id".users
 (
@@ -38,12 +38,7 @@ CREATE TABLE "mission-id".user_authorities
     authority_id VARCHAR(16) NOT NULL REFERENCES "mission-id".authorities (id)
 );
 
-CREATE TABLE "mission-id".social_service
-(
-    id            VARCHAR(36) PRIMARY KEY,
-    code          VARCHAR(10) NOT NULL,
-    configuration json        NOT NULL
-);
+CREATE TYPE "mission-id".social_service AS ENUM ('GITHUB');
 
 CREATE TABLE "mission-id".clients
 (
@@ -60,38 +55,58 @@ CREATE TABLE "mission-id".clients
     metadata                      JSON      DEFAULT NULL
 );
 
-
 CREATE TABLE "mission-id".authorization
 (
     id                             VARCHAR(36) PRIMARY KEY,
-    client_id                      VARCHAR(36)   NOT NULL REFERENCES "mission-id".clients (id),
-    user_id                        VARCHAR(36)   NOT NULL REFERENCES "mission-id".users (id),
-    authorization_grant_type       VARCHAR(200)  NOT NULL,
-    authorization_metadata         JSON DEFAULT NULL,
-    authentication_code            VARCHAR(128)  NOT NULL,
-    authentication_code_expires_at TIMESTAMP     NOT NULL,
-    user_metadata                  JSON          NOT NULL,
-    scopes                         VARCHAR(1000) NOT NULL,
-    access_token_value             VARCHAR(4000),
-    access_token_issued_at         TIMESTAMP     NOT NULL,
-    access_token_expires_at        TIMESTAMP     NOT NULL,
-    refresh_token_value            VARCHAR(4000),
-    refresh_token_issued_at        TIMESTAMP     NOT NULL,
-    refresh_token_expires_at       TIMESTAMP     NOT NULL,
-    social_service                 VARCHAR(36)   NOT NULL REFERENCES "mission-id".social_service (id)
+    client_id                      VARCHAR(36)                 NOT NULL REFERENCES "mission-id".clients (id),
+    user_id                        VARCHAR(36)                 NULL REFERENCES "mission-id".users (id),
+    issued_at                      TIMESTAMP                   NOT NULL,
+    authorization_grant_type       VARCHAR(200)                NULL,
+    authorization_metadata         JSON                        NULL DEFAULT NULL,
+    authentication_code            VARCHAR(128)                NOT NULL,
+    authentication_code_expires_at TIMESTAMP                   NOT NULL,
+    user_metadata                  JSON                        NULL,
+    scopes                         VARCHAR(1000)               NOT NULL,
+    access_token_value             VARCHAR(4000)               NULL,
+    access_token_issued_at         TIMESTAMP                   NULL,
+    access_token_expires_at        TIMESTAMP                   NULL,
+    refresh_token_value            VARCHAR(4000)               NULL,
+    refresh_token_issued_at        TIMESTAMP                   NULL,
+    refresh_token_expires_at       TIMESTAMP                   NULL,
+    social_service                 "mission-id".social_service NULL
 );
+
 
 CREATE TABLE "mission-id".ex_auth
 (
-    user_id           VARCHAR(36)  NOT NULL REFERENCES "mission-id".users (id),
-    social_service_id VARCHAR(36)  NOT NULL REFERENCES "mission-id".social_service (id),
-    external_user_id  VARCHAR(128) NOT NULL
+    user_id           VARCHAR(36)                 NOT NULL REFERENCES "mission-id".users (id),
+    social_service_id "mission-id".social_service NOT NULL,
+    external_user_id  VARCHAR(128)                NOT NULL
 );
 
 
 CREATE TABLE "mission-id".client_service
 (
-    client_id         VARCHAR(36) NOT NULL REFERENCES "mission-id".clients (id),
-    social_service_id VARCHAR(36) NOT NULL REFERENCES "mission-id".social_service (id)
+    client_id         VARCHAR(36)                 NOT NULL REFERENCES "mission-id".clients (id),
+    social_service_id "mission-id".social_service NOT NULL,
+    enabled           BOOLEAN                     NOT NULL
 );
 
+
+INSERT INTO "mission-id".clients
+VALUES ('desktop-client',
+        'https://oauth.pstmn.io/v1/callback',
+        'point',
+        '2023-11-09 12:33:32.000000',
+        true,
+        'basic',
+        'authorization_code',
+        'code',
+        '2025-11-09 12:33:32.000000',
+        'null',
+        null);
+
+INSERT INTO "mission-id".client_service
+VALUES ('desktop-client',
+        'GITHUB',
+        true);
