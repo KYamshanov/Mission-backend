@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "type": "docker-compose-up",
+            "name": "Docker-compose-up configuration",
+            "files": [
+                "$PROJECT_DIR$/docker-compose.yml"
+            ],
+            "upOptions": "--build --force-recreate",
+        },
+        
+    ]
+}
