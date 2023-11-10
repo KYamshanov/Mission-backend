@@ -61,9 +61,9 @@ class AuthorizationCodeTokenDelegate(
                 .subject(userId)
                 .audience().add("desktop-client")
                 .and()
-                .claim("scope", "openid")
+                .claim("scope", scopes)
                 .claim("iss", issuerUrl)
-                .claim("exp", System.currentTimeMillis() + (1000 * 60))
+                .claim("exp", System.currentTimeMillis() + (1000 * 60 * 10)) // configure exp time
                 .signWith(keyPair.private)
                 .compact()
 

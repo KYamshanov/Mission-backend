@@ -1,5 +1,6 @@
 package ru.kyamshanov.mission.client.impl
 
+import io.ktor.http.*
 import ru.kyamshanov.mission.client.AuthorizeDelegate
 import ru.kyamshanov.mission.client.AuthorizedDelegate
 import ru.kyamshanov.mission.client.Client

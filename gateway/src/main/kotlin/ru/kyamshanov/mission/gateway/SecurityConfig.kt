@@ -18,7 +18,7 @@ class SecurityConfig {
             .authorizeExchange {
                 it
                     .pathMatchers("/oauth2/**").permitAll()
-                    .pathMatchers("/point/private/attached").hasAnyAuthority("SCOPE_openid", "SCOPE_openid:edit")
+                    .pathMatchers("/point/private/**").hasAnyAuthority("SCOPE_point")
                     .anyExchange().denyAll()
 
             }

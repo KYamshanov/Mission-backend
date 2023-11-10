@@ -5,7 +5,7 @@ ktor:
     modules:
       - ru.kyamshanov.mission.ApplicationKt.module
 oauth:
-  issuer: "http://127.0.0.1:6543"
+  issuer: "http://auth"
   github:
     urlProvider: "http://127.0.0.1:6543/github/authorized"
     clientId: $clientId
