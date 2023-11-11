@@ -1,4 +1,7 @@
 # Backend for mission project.
+
+> ![logog](./assets/cow_backend_logo.png)
+
 Contains:
 1) ~~Authorization (LEGACY)~~
 2) Gateway
