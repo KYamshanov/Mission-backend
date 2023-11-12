@@ -28,7 +28,7 @@ class PrivateController(
         val tasksMap = taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf()).associateBy { it.id }
         val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
         val linkedList = MovableLinkedList(tasksMap.values.sortedBy { it.creationTime }.map { it.id })
-        order.forEach { linkedList.move(it.id, it.next!!) }
+        order.forEach { if (it.next == null) linkedList.moveInTail(it.id) else linkedList.move(it.id, it.next) }
         val orderedTasks = linkedList.getList().map { requireNotNull(tasksMap[it]) }
 
         return ResponseEntity(
@@ -55,7 +55,9 @@ class PrivateController(
         @RequestBody(required = true) body: RequestOrderTaskDto
     ): ResponseEntity<Unit> {
         assert(taskCrudRepository.getFirstByOwnerAndId(userId, body.taskId) != null) { "Task not found" }
-        assert(taskCrudRepository.getFirstByOwnerAndId(userId, body.placeBefore) != null) { "placeBefore not found" }
+        body.placeBefore?.let {
+            assert(taskCrudRepository.getFirstByOwnerAndId(userId, it) != null) { "placeBefore not found" }
+        }
         taskOrderCrudRepository.orderTask(body.taskId, body.placeBefore).toCollection(mutableListOf())
             .also { assert(it.size == 1) { "Was updated more or less 1 task. [${it.size}]" } }
         return ResponseEntity(HttpStatus.OK)

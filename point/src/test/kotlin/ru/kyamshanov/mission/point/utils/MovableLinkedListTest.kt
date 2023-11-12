@@ -63,4 +63,14 @@ class MovableLinkedListTest {
         assertEquals(listOf("5", "1", "2", "3", "4"), list.getList())
     }
 
+
+    @Test()
+    fun test9() {
+        val inputArray = listOf("1", "2", "3", "4", "5")
+        val list = MovableLinkedList(inputArray)
+        list.move("5", "1")
+        list.moveInTail("2")
+        assertEquals(listOf("5", "1", "3", "4", "2"), list.getList())
+    }
+
 }

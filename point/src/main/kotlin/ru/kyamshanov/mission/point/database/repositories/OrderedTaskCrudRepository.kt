@@ -25,7 +25,7 @@ class OrderedTaskCrudRepository @Autowired constructor(
             .flow()
     }
 
-    fun orderTask(taskId: String, placeBefore: String): Flow<TaskOrderEntity> {
+    fun orderTask(taskId: String, placeBefore: String?): Flow<TaskOrderEntity> {
         val sqlQuery = """
             INSERT INTO tasks_order VALUES ('$taskId','$placeBefore') ON CONFLICT (id) DO UPDATE SET next = '$placeBefore' RETURNING *;
         """.trimIndent()

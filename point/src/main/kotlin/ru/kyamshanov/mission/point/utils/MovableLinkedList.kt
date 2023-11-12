@@ -43,6 +43,19 @@ class MovableLinkedList<ID : Any>(
         }
     }
 
+    fun moveInTail(id: ID) {
+        val oldNode = requireNotNull(idNodeMap[id])
+        val p = idNodeMap[oldNode.previous]
+        val n = idNodeMap[oldNode.next]
+        p?.copy(next = n?.id)?.also { idNodeMap[it.id] = it } ?: run { head = requireNotNull(n).id }
+        n?.copy(previous = p?.id)?.also { idNodeMap[it.id] = it }
+
+
+        val tail = idNodeMap.values.first { it.next == null }
+        Node(tail.id, id, null).also { idNodeMap[it.id] = it }
+        tail.copy(next = id).also { idNodeMap[it.id] = it }
+    }
+
     fun getList(): List<ID> = buildList(requireNotNull(idNodeMap[head]))
 
     private fun buildList(node: Node<ID>, destination: MutableList<ID> = mutableListOf()): List<ID> {

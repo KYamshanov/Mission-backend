@@ -8,5 +8,5 @@ data class TaskOrderEntity(
     @Column("id")
     val id: String,
     @Column("next")
-    val next: String? = null,
+    val next: String?,
 )

@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS tasks_order;
 CREATE TABLE tasks_order
 (
     id   VARCHAR(32) PRIMARY KEY REFERENCES tasks (id),
-    next VARCHAR(32) NOT NULL REFERENCES tasks (id)
+    next VARCHAR(32) NULL REFERENCES tasks (id) /*NULL means tail*/
 );
 
 INSERT INTO tasks_order (id, next)
