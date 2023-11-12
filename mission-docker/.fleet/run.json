@@ -3,11 +3,22 @@
         {
             "type": "docker-compose-up",
             "name": "Docker-compose-up configuration",
+            "dependsOn": [
+                "Build point"
+            ],
             "files": [
                 "$PROJECT_DIR$/docker-compose.yml"
             ],
             "upOptions": "--build --force-recreate",
         },
-        
+        {
+            "type": "gradle",
+            "name": "Build point",
+            "workingDir": "../point",
+            "tasks": [
+                "build"
+            ],
+        },
+
     ]
 }

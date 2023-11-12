@@ -6,25 +6,34 @@ import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import ru.kyamshanov.mission.point.database.entities.TaskPriority
+import ru.kyamshanov.mission.point.database.repositories.OrderedTaskCrudRepository
 import ru.kyamshanov.mission.point.domain.models.TaskEntity
 import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
 import ru.kyamshanov.mission.point.network.dtos.*
+import ru.kyamshanov.mission.point.utils.MovableLinkedList
 import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/point/private/")
 class PrivateController(
-    private val taskCrudRepository: TaskCrudRepository
+    private val taskCrudRepository: TaskCrudRepository,
+    private val taskOrderCrudRepository: OrderedTaskCrudRepository
 ) {
 
     @GetMapping("/attached")
     suspend fun getAttachedTasks(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
     ): ResponseEntity<AttachedTasksResponseDto> {
+        val tasksMap = taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf()).associateBy { it.id }
+        val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
+        val linkedList = MovableLinkedList(tasksMap.values.sortedBy { it.creationTime }.map { it.id })
+        order.forEach { linkedList.move(it.id, it.next!!) }
+        val orderedTasks = linkedList.getList().map { requireNotNull(tasksMap[it]) }
+
         return ResponseEntity(
             AttachedTasksResponseDto(
-                taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf())
+                orderedTasks
                     .map {
                         AttachedTasksResponseDto.TaskSlim(
                             id = it.id,
@@ -38,6 +47,18 @@ class PrivateController(
                     }),
             HttpStatus.OK
         )
+    }
+
+    @PostMapping("/order")
+    suspend fun getAttachedTasks(
+        @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
+        @RequestBody(required = true) body: RequestOrderTaskDto
+    ): ResponseEntity<Unit> {
+        assert(taskCrudRepository.getFirstByOwnerAndId(userId, body.taskId) != null) { "Task not found" }
+        assert(taskCrudRepository.getFirstByOwnerAndId(userId, body.placeBefore) != null) { "placeBefore not found" }
+        taskOrderCrudRepository.orderTask(body.taskId, body.placeBefore).toCollection(mutableListOf())
+            .also { assert(it.size == 1) { "Was updated more or less 1 task. [${it.size}]" } }
+        return ResponseEntity(HttpStatus.OK)
     }
 
     @PostMapping("/create")

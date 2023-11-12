@@ -15,6 +15,6 @@ data class AttachedTasksResponseDto(
         val completionTime: LocalDateTime? = null,
         val priority: TaskPriority? = null,
         val status: TaskStatus = TaskStatus.CREATED,
-        val type: TaskTypeDto
+        val type: TaskTypeDto,
     )
 }

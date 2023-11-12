@@ -14,6 +14,9 @@ interface TaskCrudRepository : CoroutineCrudRepository<TaskEntity, String> {
 
     fun getAllByOwner(ownerId: String): Flow<TaskEntity>
 
+    suspend fun getFirstByOwnerAndId(ownerId: String, id: String): TaskEntity?
+
+
     suspend fun deleteByIdAndOwner(id: String, owner: String)
 
     @Modifying
