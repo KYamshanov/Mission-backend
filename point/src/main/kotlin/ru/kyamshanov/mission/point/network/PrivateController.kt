@@ -1,6 +1,7 @@
 package ru.kyamshanov.mission.point.network
 
 import kotlinx.coroutines.flow.toCollection
+import org.springframework.data.util.Pair
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
@@ -9,9 +10,11 @@ import ru.kyamshanov.mission.point.database.entities.TaskPriority
 import ru.kyamshanov.mission.point.database.repositories.OrderedTaskQueryRepository
 import ru.kyamshanov.mission.point.domain.models.TaskEntity
 import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
+import ru.kyamshanov.mission.point.domain.models.TaskOrderEntity
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
 import ru.kyamshanov.mission.point.network.dtos.*
 import ru.kyamshanov.mission.point.utils.MovableLinkedList
+import ru.kyamshanov.mission.point.utils.MutablePair
 import java.time.LocalDateTime
 
 @RestController
@@ -27,8 +30,23 @@ class PrivateController(
     ): ResponseEntity<AttachedTasksResponseDto> {
         val tasksMap = taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf()).associateBy { it.id }
         val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
-        val linkedList = MovableLinkedList(tasksMap.values.sortedBy { it.creationTime }.map { it.id })
-        order.forEach { if (it.next == null) linkedList.moveInTail(it.id) else linkedList.move(it.id, it.next) }
+        val sortedTasks = tasksMap.values.toMutableList().apply {
+            sortWith(
+                compareBy<TaskEntity> { it.status.weight }
+                    .thenBy { it.priority?.weight ?: 1 }
+                    .thenBy { it.creationTime }
+            )
+        }
+
+        val linkedList = MovableLinkedList(sortedTasks.map { it.id })
+        val orderN = order.map { MutablePair(it, true) }.associateBy { it.first.next }.toMutableMap()
+
+        orderN.forEach { t: String?, u ->
+            if (u.second) muve(linkedList, u, orderN)
+        }
+
+
+        //order.forEach { if (it.next == null) linkedList.moveInTail(it.id) else linkedList.move(it.id, it.next) }
         val orderedTasks = linkedList.getList().map { requireNotNull(tasksMap[it]) }
 
         return ResponseEntity(
@@ -49,16 +67,28 @@ class PrivateController(
         )
     }
 
+    private fun muve(
+        linkedList: MovableLinkedList<String>,
+        taskPair: MutablePair<TaskOrderEntity, Boolean>,
+        map: MutableMap<String?, MutablePair<TaskOrderEntity, Boolean>>
+    ) {
+        val taskEntity = taskPair.first
+        println("Muve ${taskEntity.id} ${taskEntity.next}")
+        if (taskEntity.next == null) linkedList.moveInTail(taskEntity.id) else linkedList.move(
+            taskEntity.id,
+            taskEntity.next
+        )
+        taskPair.second = false
+        map[taskEntity.id]?.let { muve(linkedList, it, map) }
+    }
+
     @PostMapping("/order")
     suspend fun setOrderOfTask(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
         @RequestBody(required = true) body: RequestOrderTaskDto
     ): ResponseEntity<Unit> {
         assert(taskCrudRepository.getFirstByOwnerAndId(userId, body.taskId) != null) { "Task not found" }
-        body.newPlaceBefore?.let {
-            assert(taskCrudRepository.getFirstByOwnerAndId(userId, it) != null) { "newPlaceBefore not found" }
-        }
-        taskOrderCrudRepository.orderTask(body.taskId, body.newPlaceBefore)
+        taskOrderCrudRepository.orderTask(body)
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -123,6 +153,7 @@ class PrivateController(
     ): ResponseEntity<Unit> {
         taskCrudRepository.updateTaskType(taskId, userId, taskType.toDomain()).toCollection(mutableListOf())
             .also { assert(it.size == 1) { "Less or more one task have been updated. Count: ${it.size}" } }
+        taskOrderCrudRepository.removeOrder(taskId)
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -135,6 +166,7 @@ class PrivateController(
     ): ResponseEntity<Unit> {
         taskCrudRepository.updateTaskStatus(taskId, userId, taskStatus).toCollection(mutableListOf())
             .also { assert(it.size == 1) { "Less or more one task have been updated. Count: ${it.size}" } }
+        taskOrderCrudRepository.removeOrder(taskId)
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -147,6 +179,7 @@ class PrivateController(
     ): ResponseEntity<Unit> {
         taskCrudRepository.updateTaskPriority(taskId, userId, priority).toCollection(mutableListOf())
             .also { assert(it.size == 1) { "Less or more one task have been updated. Count: ${it.size}" } }
+        taskOrderCrudRepository.removeOrder(taskId)
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -158,6 +191,7 @@ class PrivateController(
     ): ResponseEntity<Unit> {
         taskCrudRepository.updateTaskPriority(taskId, userId, null).toCollection(mutableListOf())
             .also { assert(it.size == 1) { "Less or more one task have been updated. Count: ${it.size}" } }
+        taskOrderCrudRepository.removeOrder(taskId)
         return ResponseEntity(HttpStatus.OK)
     }
 

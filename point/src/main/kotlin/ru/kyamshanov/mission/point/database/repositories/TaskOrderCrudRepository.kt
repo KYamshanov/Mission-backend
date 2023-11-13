@@ -16,5 +16,5 @@ interface TaskOrderCrudRepository : CoroutineCrudRepository<TaskOrderEntity, Str
     @Query("INSERT INTO tasks_order VALUES (:id,:next, :time) ON CONFLICT (id) DO UPDATE SET next = :next and updated_at = :time RETURNING *;")
     fun insert(id: String, next: String?, time: LocalDateTime): Flow<TaskOrderEntity>
 
-    suspend fun findByNext(next: String): TaskOrderEntity?
+    fun findAllByNext(next: String): Flow<TaskOrderEntity>
 }

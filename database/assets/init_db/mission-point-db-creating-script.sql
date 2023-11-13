@@ -47,16 +47,16 @@ DROP TABLE IF EXISTS tasks_order;
 CREATE TABLE tasks_order
 (
     id         VARCHAR(32) PRIMARY KEY REFERENCES tasks (id),
-    next       VARCHAR(32) NULL REFERENCES tasks (id), /*NULL means tail*/
+    next       VARCHAR(32) NULL, /*NULL means tail*/
     updated_at TIMESTAMP   NOT NULL,
     CONSTRAINT not_equal CHECK ( id NOT LIKE next)
 );
 
-INSERT INTO tasks_order (id, next)
-VALUES ('492a678217b047358b8a9ca696bd30c1', 'a59d8ae116d84c6d8381a976cce_my2')
-RETURNING *;
+SELECT tasks_order.id, tasks_order.next, tasks_order.updated_at, tasks.title, t2.title
+FROM tasks_order
+         LEFT JOIN tasks ON tasks_order.id = tasks.id
+         LEFT JOIN tasks t2 ON tasks_order.next = t2.id
+ORDER BY updated_at;
 
-INSERT INTO tasks_order (id, next)
-VALUES ('a59d8ae116d84c6d8381a976cce_my2', 'a59d8ae116d84cd8381a9c76c2c_my3');
 
 

@@ -33,7 +33,7 @@ class MovableLinkedList<ID : Any>(
         p?.copy(next = n?.id)?.also { idNodeMap[it.id] = it } ?: run { head = requireNotNull(n).id }
         n?.copy(previous = p?.id)?.also { idNodeMap[it.id] = it }
 
-        val nextNode = requireNotNull(idNodeMap[beforeIndex])
+        val nextNode = requireNotNull(idNodeMap[beforeIndex]) { "Required beforeIndex $beforeIndex" }
         val oldNextNode = idNodeMap[nextNode.previous]
         oldNextNode?.copy(next = id)?.also { idNodeMap[it.id] = it }
         nextNode.copy(previous = id).also { idNodeMap[it.id] = it }
@@ -45,6 +45,7 @@ class MovableLinkedList<ID : Any>(
 
     fun moveInTail(id: ID) {
         val oldNode = requireNotNull(idNodeMap[id])
+        if (oldNode.next == null) return
         val p = idNodeMap[oldNode.previous]
         val n = idNodeMap[oldNode.next]
         p?.copy(next = n?.id)?.also { idNodeMap[it.id] = it } ?: run { head = requireNotNull(n).id }
