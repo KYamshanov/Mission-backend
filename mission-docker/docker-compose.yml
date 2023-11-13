@@ -36,7 +36,7 @@ services:
       - gateway
     environment:
       SERVER_PORT: 80
-      postgresql_url: 'r2dbc:postgresql://postgres:5432/postgres'
+      postgresql_url_r2dbc: 'r2dbc:postgresql://postgres:5432/postgres'
     ports:
       - 8081:80
 networks:

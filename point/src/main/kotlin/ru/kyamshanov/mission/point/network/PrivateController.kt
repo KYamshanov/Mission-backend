@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import ru.kyamshanov.mission.point.database.entities.TaskPriority
-import ru.kyamshanov.mission.point.database.repositories.OrderedTaskCrudRepository
+import ru.kyamshanov.mission.point.database.repositories.OrderedTaskQueryRepository
 import ru.kyamshanov.mission.point.domain.models.TaskEntity
 import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 @RequestMapping("/point/private/")
 class PrivateController(
     private val taskCrudRepository: TaskCrudRepository,
-    private val taskOrderCrudRepository: OrderedTaskCrudRepository
+    private val taskOrderCrudRepository: OrderedTaskQueryRepository
 ) {
 
     @GetMapping("/attached")
@@ -50,16 +50,15 @@ class PrivateController(
     }
 
     @PostMapping("/order")
-    suspend fun getAttachedTasks(
+    suspend fun setOrderOfTask(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
         @RequestBody(required = true) body: RequestOrderTaskDto
     ): ResponseEntity<Unit> {
         assert(taskCrudRepository.getFirstByOwnerAndId(userId, body.taskId) != null) { "Task not found" }
-        body.placeBefore?.let {
-            assert(taskCrudRepository.getFirstByOwnerAndId(userId, it) != null) { "placeBefore not found" }
+        body.newPlaceBefore?.let {
+            assert(taskCrudRepository.getFirstByOwnerAndId(userId, it) != null) { "newPlaceBefore not found" }
         }
-        taskOrderCrudRepository.orderTask(body.taskId, body.placeBefore).toCollection(mutableListOf())
-            .also { assert(it.size == 1) { "Was updated more or less 1 task. [${it.size}]" } }
+        taskOrderCrudRepository.orderTask(body.taskId, body.newPlaceBefore)
         return ResponseEntity(HttpStatus.OK)
     }
 
