@@ -8,7 +8,6 @@ import ru.kyamshanov.mission.client.ClientStorage
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.ResponseType
 import ru.kyamshanov.mission.client.models.Scope
-import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.identification.IdentificationServiceFactory
 import ru.kyamshanov.mission.tables.ClientServiceTable
 import ru.kyamshanov.mission.tables.ClientsTable
@@ -30,7 +29,9 @@ class ClientStorageImpl(
                 socialServices = ClientServiceTable.select { ClientServiceTable.clientId eq clientId }
                     .map { it[ClientServiceTable.socialServiceId] },
                 redirectUrl = it[ClientsTable.redirectUrl],
-                identificationServiceFactory = identificationServiceFactory
+                identificationServiceFactory = identificationServiceFactory,
+                accessTokenLifetimeInMS = it[ClientsTable.metadata].accessTokenLifetimeInMS,
+                refreshTokenLifetimeInMS = it[ClientsTable.metadata].refreshTokenLifetimeInMS,
             )
         }
     }

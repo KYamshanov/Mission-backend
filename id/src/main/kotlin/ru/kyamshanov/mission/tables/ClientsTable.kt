@@ -4,12 +4,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.json.json
-import ru.kyamshanov.mission.tables.Authorities.entityId
 
 
 /**
@@ -45,4 +42,7 @@ object ClientsTable : IdTable<String>(name = "mission-id.clients") {
 }
 
 @Serializable
-data class ClientMetadata(val somethingData: String)
+data class ClientMetadata(
+    val accessTokenLifetimeInMS: Long,
+    val refreshTokenLifetimeInMS: Long,
+)

@@ -9,6 +9,12 @@ interface Client {
 
     val identificationServices: Map<SocialService, IdentificationService>
 
+    val accessTokenLifetimeInMS: Long
+
+    val refreshTokenLifetimeInMS: Long
+
+    val isRefreshTokenSupported: Boolean
+
     fun authorize(responseType: String, scope: String, state: String): Result<AuthorizeDelegate>
 
     fun authorizedBy(service: SocialService): Result<AuthorizedDelegate>

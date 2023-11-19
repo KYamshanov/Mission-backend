@@ -19,10 +19,14 @@ data class ClientImpl(
     private val scopes: List<Scope>,
     private val redirectUrl: String,
     private val socialServices: List<SocialService>,
-    private val identificationServiceFactory: IdentificationServiceFactory
+    private val identificationServiceFactory: IdentificationServiceFactory,
+    override val accessTokenLifetimeInMS: Long,
+    override val refreshTokenLifetimeInMS: Long
 ) : Client {
 
     override val identificationServices = socialServices.associateWith { identificationServiceFactory.create(it) }
+    override val isRefreshTokenSupported: Boolean =
+        authorizationGrantTypes.contains(AuthorizationGrantTypes.REFRESH_TOKEN)
 
     override fun authorize(responseType: String, scope: String, state: String): Result<AuthorizeDelegate> =
         runCatching {

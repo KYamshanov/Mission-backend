@@ -106,6 +106,11 @@ private val secureRandom: SecureRandom = SecureRandom()
 
 private val base64Encoder: Base64.Encoder = Base64.getUrlEncoder()
 
+fun generateRefreshToken(): String {
+    val randomBytes = ByteArray(156)
+    secureRandom.nextBytes(randomBytes)
+    return base64Encoder.encodeToString(randomBytes)
+}
 
 fun generateNewToken(): String {
     val randomBytes = ByteArray(95)

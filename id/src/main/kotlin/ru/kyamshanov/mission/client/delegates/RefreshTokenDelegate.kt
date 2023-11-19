@@ -11,10 +11,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import ru.kyamshanov.mission.client.ClientFactory
 import ru.kyamshanov.mission.client.TokenDelegate
-import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.TokensRsDto
 import ru.kyamshanov.mission.plugins.generateRefreshToken
-import ru.kyamshanov.mission.plugins.getCodeChallenge
 import ru.kyamshanov.mission.plugins.keyPair
 import ru.kyamshanov.mission.plugins.kid
 import ru.kyamshanov.mission.tables.AuthorizationTable
@@ -24,43 +22,35 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-class AuthorizationCodeTokenDelegate(
+class RefreshTokenDelegate(
     private val issuerUrl: String,
     private val clientFactory: ClientFactory,
     private val formParameters: Parameters,
 ) : TokenDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
-            val authCode: String = requireNotNull(formParameters["code"])
-            val codeVerifier: String = requireNotNull(formParameters["code_verifier"])
+            val refreshToken: String = requireNotNull(formParameters["refresh_token"])
             val clientId: String
-            val codeChallenge: String
-            val token: String
             val scopes: String
-            val socialService: SocialService
+            val userId: String
+            val refreshTokenExpiresAt: LocalDateTime
 
 
-            println("authCode")
 
             transaction {
                 AuthorizationTable.select {
-                    AuthorizationTable.authenticationCode eq authCode
+                    AuthorizationTable.refreshTokenValue eq refreshToken
                 }.limit(1).single()
             }.also {
                 clientId = it[AuthorizationTable.clientId]
-                codeChallenge = it[AuthorizationTable.authorizationMetadata].codeChallenge
-                token = requireNotNull(it[AuthorizationTable.authorizationMetadata].token)
                 scopes = it[AuthorizationTable.scopes]
-                socialService = it[AuthorizationTable.socialService]
+                userId = it[AuthorizationTable.userId]
+                refreshTokenExpiresAt = it[AuthorizationTable.refreshTokenExpiresAt]
             }
 
-            assert(getCodeChallenge(codeVerifier) == codeChallenge)
+            if (refreshTokenExpiresAt < LocalDateTime.now()) throw IllegalStateException("RefreshToken is expired")
 
             val client = clientFactory.create(clientId).getOrThrow()
-            val userId = client.identificationServices[socialService]!!.identify(token)
-
-            //Generation access and refresh token
-
             val accessTokenExpiresAt = LocalDateTime.now().plus(client.accessTokenLifetimeInMS, ChronoUnit.MILLIS)
             val accessToken = Jwts.builder()
                 .header()
@@ -74,37 +64,36 @@ class AuthorizationCodeTokenDelegate(
                 .claim("exp", Timestamp.valueOf(accessTokenExpiresAt).time)
                 .signWith(keyPair.private)
                 .compact()
-            val refreshTokenExpiresAt: Date?
-            val refreshToken: String?
+            val newRefreshTokenExpiresAt: Date?
+            val newRefreshToken: String?
 
             if (client.isRefreshTokenSupported) {
-                refreshToken = generateRefreshToken()
-                refreshTokenExpiresAt = Date(System.currentTimeMillis() + client.refreshTokenLifetimeInMS)
+                newRefreshToken = generateRefreshToken()
+                newRefreshTokenExpiresAt = Date(System.currentTimeMillis() + client.refreshTokenLifetimeInMS)
             } else {
-                refreshToken = null
-                refreshTokenExpiresAt = null
+                newRefreshToken = null
+                newRefreshTokenExpiresAt = null
             }
 
-            //Saving
             transaction {
-                AuthorizationTable.update({ AuthorizationTable.authenticationCode eq authCode }) {
-                    it[AuthorizationTable.userId] = userId
+                // see https://youtrack.jetbrains.com/issue/EXPOSED-219/Exception-in-update-UUIDTable-by-primaryKey
+                AuthorizationTable.update({ AuthorizationTable.refreshTokenValue eq refreshToken }) {
                     it[issuedAt] = LocalDateTime.now()
                     it[AuthorizationTable.accessTokenExpiresAt] = accessTokenExpiresAt
                     it[accessTokenValue] = accessToken
-                    if (refreshToken != null) {
-                        it[refreshTokenValue] = refreshToken
+                    if (newRefreshToken != null) {
+                        it[refreshTokenValue] = newRefreshToken
                         it[refreshTokenIssuedAt] = LocalDateTime.now()
                     }
-                    if (refreshTokenExpiresAt != null) it[AuthorizationTable.refreshTokenExpiresAt] =
-                        LocalDateTime.ofInstant(refreshTokenExpiresAt.toInstant(), ZoneId.systemDefault())
+                    if (newRefreshTokenExpiresAt != null) it[AuthorizationTable.refreshTokenExpiresAt] =
+                        LocalDateTime.ofInstant(newRefreshTokenExpiresAt.toInstant(), ZoneId.systemDefault())
                 }.also {
-                    if (it != 1) throw IllegalStateException("There is was updated not one entity in the database at obtaining token. [$it]")
+                    if (it != 1) throw IllegalStateException("There is was updated not one entity in the database at refreshing. [$it]")
                 }
             }
             val response = TokensRsDto(
                 accessToken = accessToken,
-                refreshToken = refreshToken,
+                refreshToken = newRefreshToken,
                 scope = scopes,
                 tokenType = "Bearer",
                 expiresIn = client.accessTokenLifetimeInMS / 1000

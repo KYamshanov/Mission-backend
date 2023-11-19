@@ -10,6 +10,7 @@ import io.ktor.util.pipeline.*
 import ru.kyamshanov.mission.authorization.Auth
 import ru.kyamshanov.mission.client.ClientFactory
 import ru.kyamshanov.mission.client.delegates.AuthorizationCodeTokenDelegate
+import ru.kyamshanov.mission.client.delegates.RefreshTokenDelegate
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
@@ -43,12 +44,16 @@ class AuthImpl(
 
             val d = when (grantType) {
                 AuthorizationGrantTypes.AUTHORIZATION_CODE -> AuthorizationCodeTokenDelegate(
-                    issuerUrl,
-                    clientFactory,
-                    formParameters
+                    issuerUrl = issuerUrl,
+                    clientFactory = clientFactory,
+                    formParameters = formParameters,
                 )
 
-                AuthorizationGrantTypes.REFRESH_TOKEN -> TODO()
+                AuthorizationGrantTypes.REFRESH_TOKEN -> RefreshTokenDelegate(
+                    issuerUrl = issuerUrl,
+                    clientFactory = clientFactory,
+                    formParameters = formParameters,
+                )
             }
 
             d.execute(this, httpClient)
