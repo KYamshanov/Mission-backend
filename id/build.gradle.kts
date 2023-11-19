@@ -41,6 +41,7 @@ dependencies {
     implementation("io.ktor:ktor-server-freemarker-jvm")
     implementation("io.ktor:ktor-client-cio-jvm")
     implementation("io.ktor:ktor-server-sessions")
+    implementation("io.ktor:ktor-server-double-receive")
 
     //logs
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -58,6 +59,7 @@ dependencies {
 
     //jwt
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    implementation("io.ktor:ktor-server-double-receive-jvm:2.3.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-gson:$jjwtVersion")
 

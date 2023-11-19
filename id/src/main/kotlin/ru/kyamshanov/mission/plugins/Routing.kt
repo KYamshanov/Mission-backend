@@ -4,27 +4,18 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Jwks
 import io.jsonwebtoken.security.RsaPublicJwk
 import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.freemarker.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
-import kotlinx.coroutines.coroutineScope
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import ru.kyamshanov.mission.authorization.Auth
 import ru.kyamshanov.mission.client.models.SocialService
-import ru.kyamshanov.mission.dto.*
-import ru.kyamshanov.mission.tables.AuthorizationTable
+import ru.kyamshanov.mission.dto.JwkDto
+import ru.kyamshanov.mission.dto.JwksRsDto
+import ru.kyamshanov.mission.dto.OpenIdConfigRsDto
 import java.security.KeyPair
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.time.LocalDateTime
 import java.util.*
 
 
@@ -103,7 +94,8 @@ fun Application.configureRouting(httpClient: HttpClient, auth: Auth) {
 
 
         authenticate("auth-oauth-github") {
-            get("/auth/github") {}
+
+            post("/auth/github") { }
 
             get("/github/authorized") { auth.authorizedBy(SocialService.GITHUB, this) }
         }

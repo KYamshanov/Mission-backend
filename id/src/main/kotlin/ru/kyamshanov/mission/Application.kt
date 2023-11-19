@@ -1,16 +1,12 @@
 package ru.kyamshanov.mission
 
-import freemarker.cache.ClassTemplateLoader
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.engine.*
-import io.ktor.server.freemarker.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.doublereceive.*
 import kotlinx.serialization.json.Json
 import ru.kyamshanov.mission.authorization.impl.AuthImpl
 import ru.kyamshanov.mission.client.impl.ClientFactoryImpl
@@ -36,24 +32,26 @@ private val applicationHttpClient = HttpClient(CIO) {
 }
 
 fun Application.module(httpClient: HttpClient = applicationHttpClient) {
+    install(DoubleReceive)
     install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
         json()
     }
     dbConnect()
     configureSession()
     freeMarker()
-    authentication(httpClient)
     val issuer = this.environment.config.property("oauth.issuer").getString()
 
+    val auth = AuthImpl(
+        ClientFactoryImpl(
+            ClientStorageImpl(
+                IdentificationServiceFactoryImpl(
+                    GithubIdentification(httpClient)
+                )
+            ), ClientInMemoryKeeperImpl()
+        ), httpClient, issuer
+    )
+    authentication(httpClient, auth)
     configureRouting(
-        httpClient, AuthImpl(
-            ClientFactoryImpl(
-                ClientStorageImpl(
-                    IdentificationServiceFactoryImpl(
-                        GithubIdentification(httpClient)
-                    )
-                ), ClientInMemoryKeeperImpl()
-            ), httpClient, issuer
-        )
+        httpClient, auth
     )
 }

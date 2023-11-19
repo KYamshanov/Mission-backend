@@ -3,6 +3,7 @@ package ru.kyamshanov.mission.client.delegates
 import io.ktor.client.*
 import io.ktor.server.application.*
 import io.ktor.server.freemarker.*
+import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import ru.kyamshanov.mission.client.AuthorizeDelegate
@@ -13,6 +14,8 @@ class CodeAuthorizeDelegate(
     private val clientId: String,
     private val scope: String,
     private val clientRedirectUrl: String,
+    private val state: String,
+    private val csrfToken: String
 ) : AuthorizeDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
@@ -29,8 +32,10 @@ class CodeAuthorizeDelegate(
                     scope,
                     callbackUrl,
                     clientId,
+                    state,
+                    csrfToken
                 )
             )
-            call.respondTemplate("login.ftl")
+            call.respond(FreeMarkerContent("login.ftl", mapOf("csrf_token" to csrfToken)))
         }
 }

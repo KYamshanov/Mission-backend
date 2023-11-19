@@ -23,12 +23,12 @@
             <label for="password" class="sr-only">Password</label>
             <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
         </p>
-        <input name="_csrf" type="hidden"
-               value="HC20TnCvAF5UQube6bprHpwuOhpBrB4oK56tC7bS1o26f4-jLh-MdxPKYml5dNHt2ZdfKa4XF3sizigFSqacbtfh5bqCSb3H"/>
+        <input name="_csrf" type="hidden" value="${csrf_token}"/>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
     </form>
 
-    <form class="form-signin" method="get" action="/auth/github">
+    <form class="form-signin" method="post" action="/auth/github">
+        <input name="_csrf" type="hidden" value="${csrf_token}"/>
         <button type="submit">Sign in by github</button>
     </form>
 </div>

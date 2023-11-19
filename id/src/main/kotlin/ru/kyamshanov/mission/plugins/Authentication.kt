@@ -4,8 +4,10 @@ import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import ru.kyamshanov.mission.authorization.Auth
+import ru.kyamshanov.mission.client.models.SocialService
 
-fun Application.authentication(httpClient: HttpClient) = install(Authentication) {
+fun Application.authentication(httpClient: HttpClient, auth: Auth) = install(Authentication) {
     oauth("auth-oauth-github") {
         urlProvider = { "http://127.0.0.1:6543/github/authorized" }
         providerLookup = {
@@ -17,9 +19,7 @@ fun Application.authentication(httpClient: HttpClient) = install(Authentication)
                 clientId = this@authentication.environment.config.property("oauth.github.clientId").getString(),
                 clientSecret = this@authentication.environment.config.property("oauth.github.clientSecret").getString(),
                 defaultScopes = listOf("read:user"),
-                onStateCreated = { call, state ->
-                    //redirects[state] = call.request.queryParameters["redirectUrl"]!!
-                }
+                onStateCreated = { call, state -> auth.loginBy(SocialService.GITHUB, call) }
             )
         }
         client = httpClient

@@ -6,7 +6,7 @@ import ru.kyamshanov.mission.dto.OAuthSessionConfig
 
 fun Application.configureSession() {
     install(Sessions) {
-        cookie<OAuthSessionConfig>("ID_SESSION") {
+        cookie<OAuthSessionConfig>("ID_SESSION", SessionStorageMemory()) {
             //cookie.maxAgeInSeconds = 120
         }
     }

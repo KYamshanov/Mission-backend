@@ -13,7 +13,6 @@ import ru.kyamshanov.mission.client.delegates.AuthorizationCodeTokenDelegate
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
-import kotlin.requireNotNull
 
 class AuthImpl(
     private val clientFactory: ClientFactory,
@@ -23,12 +22,13 @@ class AuthImpl(
 
     override suspend fun authorize(pipeline: PipelineContext<Unit, ApplicationCall>) {
         pipeline.runCatching {
-            val clientId = requireNotNull(call.parameters["client_id"])
-            val responseType = requireNotNull(call.parameters["response_type"])
-            val scope = requireNotNull(call.parameters["scope"])
+            val clientId = requireNotNull(call.parameters["client_id"]) { "Property client_id required" }
+            val responseType = requireNotNull(call.parameters["response_type"]) { "Property response_type required" }
+            val scope = requireNotNull(call.parameters["scope"]) { "Property scope required" }
+            val state = requireNotNull(call.parameters["state"]) { "Property state required" }
 
             val client = clientFactory.create(clientId).getOrThrow()
-            client.authorize(responseType, scope).getOrThrow().execute(this, httpClient)
+            client.authorize(responseType, scope, state).getOrThrow().execute(this, httpClient)
         }.onFailure {
             it.printStackTrace()
             pipeline.call.respond(HttpStatusCode.InternalServerError)
@@ -56,6 +56,16 @@ class AuthImpl(
             it.printStackTrace()
             pipeline.call.respond(HttpStatusCode.InternalServerError)
         }
+    }
+
+    override suspend fun loginBy(service: SocialService, call: ApplicationCall) {
+        val formParameters = call.receiveParameters()
+        val csrfToken = requireNotNull(formParameters["_csrf"].toString())
+        val sessionConfig = requireNotNull(call.sessions.get<OAuthSessionConfig>())
+
+        println("csrfToken ${csrfToken} saved: ${sessionConfig.csrfToken}")
+
+        if (csrfToken != sessionConfig.csrfToken) throw IllegalStateException("Csrf is not valid")
     }
 
     override suspend fun authorizedBy(service: SocialService, pipeline: PipelineContext<Unit, ApplicationCall>) {
