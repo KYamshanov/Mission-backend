@@ -16,6 +16,7 @@ import ru.kyamshanov.mission.plugins.generateRefreshToken
 import ru.kyamshanov.mission.plugins.keyPair
 import ru.kyamshanov.mission.plugins.kid
 import ru.kyamshanov.mission.tables.AuthorizationTable
+import ru.kyamshanov.mission.tables.UsersTable
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -49,6 +50,12 @@ class RefreshTokenDelegate(
             }
 
             if (refreshTokenExpiresAt < LocalDateTime.now()) throw IllegalStateException("RefreshToken is expired")
+
+            transaction {
+                UsersTable.select { UsersTable.id eq UUID.fromString(userId) }.single().let { it[UsersTable.enabled] }
+            }.also {
+                if (it.not()) throw IllegalStateException("User is disabled")
+            }
 
             val client = clientFactory.create(clientId).getOrThrow()
             val accessTokenExpiresAt = LocalDateTime.now().plus(client.accessTokenLifetimeInMS, ChronoUnit.MILLIS)

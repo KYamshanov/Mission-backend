@@ -33,7 +33,7 @@ class GithubIdentification(
                     it[ExAuthTable.userId] = userId
                     it[socialService] = SocialService.GITHUB
                     it[externalUserId] = githubUserId
-                }.execute(this)
+                }
                 userId
             }
         }

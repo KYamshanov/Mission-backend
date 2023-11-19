@@ -29,25 +29,27 @@ class PrivateController(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
     ): ResponseEntity<AttachedTasksResponseDto> {
         val tasksMap = taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf()).associateBy { it.id }
-        val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
-        val sortedTasks = tasksMap.values.toMutableList().apply {
-            sortWith(
-                compareBy<TaskEntity> { it.status.weight }
-                    .thenBy { it.priority?.weight ?: 1 }
-                    .thenBy { it.creationTime }
-            )
-        }
+        val orderedTasks = if (tasksMap.isNotEmpty()) {
+            val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
+            val sortedTasks = tasksMap.values.toMutableList().apply {
+                sortWith(
+                    compareBy<TaskEntity> { it.status.weight }
+                        .thenBy { it.priority?.weight ?: 1 }
+                        .thenBy { it.creationTime }
+                )
+            }
 
-        val linkedList = MovableLinkedList(sortedTasks.map { it.id })
-        val orderN = order.map { MutablePair(it, true) }.associateBy { it.first.next }.toMutableMap()
+            val linkedList = MovableLinkedList(sortedTasks.map { it.id })
+            val orderN = order.map { MutablePair(it, true) }.associateBy { it.first.next }.toMutableMap()
 
-        orderN.forEach { t: String?, u ->
-            if (u.second) muve(linkedList, u, orderN)
-        }
+            orderN.forEach { t: String?, u ->
+                if (u.second) muve(linkedList, u, orderN)
+            }
 
 
-        //order.forEach { if (it.next == null) linkedList.moveInTail(it.id) else linkedList.move(it.id, it.next) }
-        val orderedTasks = linkedList.getList().map { requireNotNull(tasksMap[it]) }
+            //order.forEach { if (it.next == null) linkedList.moveInTail(it.id) else linkedList.move(it.id, it.next) }
+            linkedList.getList().map { requireNotNull(tasksMap[it]) }
+        } else emptyList()
 
         return ResponseEntity(
             AttachedTasksResponseDto(

@@ -21,7 +21,7 @@ CREATE TABLE tasks
     priority        task_priority        DEFAULT NULL,
     type            task_type            DEFAULT NULL,
     status          task_status NOT NULL DEFAULT 'CREATED',
-    owner           VARCHAR(32) NOT NULL
+    owner           VARCHAR(36) NOT NULL
 );
 
 INSERT INTO tasks
