@@ -28,8 +28,8 @@ import ru.kyamshanov.mission.client.models.SocialService
  * );
  */
 object AuthorizationTable : UUIDTable(name = "mission-id.authorization") {
-    val clientId = varchar("client_id", 36)
-    val userId = varchar("user_id", 36)
+    val clientId = varchar("client_id", 20)
+    val userId = uuid("user_id")
     val issuedAt = datetime("issued_at")
     val authorizationGrantType = varchar("authorization_grant_type", 200)
     val authorizationMetadata = json<AuthorizationMetadata>("authorization_metadata", Json { prettyPrint = true })

@@ -33,9 +33,9 @@ class RefreshTokenDelegate(
             val refreshToken: String = requireNotNull(formParameters["refresh_token"])
             val clientId: String
             val scopes: String
-            val userId: String
+            val userId: UUID
             val refreshTokenExpiresAt: LocalDateTime
-
+            val authorizationId: UUID
 
 
             transaction {
@@ -47,12 +47,13 @@ class RefreshTokenDelegate(
                 scopes = it[AuthorizationTable.scopes]
                 userId = it[AuthorizationTable.userId]
                 refreshTokenExpiresAt = it[AuthorizationTable.refreshTokenExpiresAt]
+                authorizationId = it[AuthorizationTable.id].value
             }
 
             if (refreshTokenExpiresAt < LocalDateTime.now()) throw IllegalStateException("RefreshToken is expired")
 
             transaction {
-                UsersTable.select { UsersTable.id eq UUID.fromString(userId) }.single().let { it[UsersTable.enabled] }
+                UsersTable.select { UsersTable.id eq userId }.single().let { it[UsersTable.enabled] }
             }.also {
                 if (it.not()) throw IllegalStateException("User is disabled")
             }
@@ -63,7 +64,7 @@ class RefreshTokenDelegate(
                 .header()
                 .keyId(kid)
                 .and()
-                .subject(userId)
+                .subject(userId.toString())
                 .audience().add(client.clientId)
                 .and()
                 .claim("scope", scopes)
@@ -84,7 +85,7 @@ class RefreshTokenDelegate(
 
             transaction {
                 // see https://youtrack.jetbrains.com/issue/EXPOSED-219/Exception-in-update-UUIDTable-by-primaryKey
-                AuthorizationTable.update({ AuthorizationTable.refreshTokenValue eq refreshToken }) {
+                AuthorizationTable.update({ AuthorizationTable.id eq authorizationId }) {
                     it[issuedAt] = LocalDateTime.now()
                     it[AuthorizationTable.accessTokenExpiresAt] = accessTokenExpiresAt
                     it[accessTokenValue] = accessToken

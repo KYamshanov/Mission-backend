@@ -38,9 +38,7 @@ class AuthorizationCodeTokenDelegate(
             val token: String
             val scopes: String
             val socialService: SocialService
-
-
-            println("authCode")
+            val authorizationId: UUID
 
             transaction {
                 AuthorizationTable.select {
@@ -52,6 +50,7 @@ class AuthorizationCodeTokenDelegate(
                 token = requireNotNull(it[AuthorizationTable.authorizationMetadata].token)
                 scopes = it[AuthorizationTable.scopes]
                 socialService = it[AuthorizationTable.socialService]
+                authorizationId = it[AuthorizationTable.id].value
             }
 
             assert(getCodeChallenge(codeVerifier) == codeChallenge)
@@ -66,7 +65,7 @@ class AuthorizationCodeTokenDelegate(
                 .header()
                 .keyId(kid)
                 .and()
-                .subject(userId)
+                .subject(userId.toString())
                 .audience().add(client.clientId)
                 .and()
                 .claim("scope", scopes)
@@ -87,7 +86,7 @@ class AuthorizationCodeTokenDelegate(
 
             //Saving
             transaction {
-                AuthorizationTable.update({ AuthorizationTable.authenticationCode eq authCode }) {
+                AuthorizationTable.update({ AuthorizationTable.id eq authorizationId }) {
                     it[AuthorizationTable.userId] = userId
                     it[issuedAt] = LocalDateTime.now()
                     it[AuthorizationTable.accessTokenExpiresAt] = accessTokenExpiresAt

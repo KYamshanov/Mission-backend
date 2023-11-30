@@ -2,7 +2,7 @@
     "configurations": [
         {
             "type": "docker-compose-up",
-            "name": "Docker-compose-up configuration",
+            "name": "Up backend",
             "dependsOn": [
                 "Build point",
                 "Build id"

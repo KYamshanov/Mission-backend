@@ -10,13 +10,14 @@ import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.GithubUserRsDto
 import ru.kyamshanov.mission.tables.ExAuthTable
 import ru.kyamshanov.mission.tables.UsersTable
+import java.util.*
 
 class GithubIdentification(
     private val httpClient: HttpClient
 ) : GithubIdentificationService {
 
 
-    override suspend fun identify(githubAccessToken: String): String {
+    override suspend fun identify(githubAccessToken: String): UUID {
         val githubUserId = httpClient.get("https://api.github.com/user") {
             header("Accept", "application/vnd.github+json")
             header("X-GitHub-Api-Version", "2022-11-28")
@@ -28,7 +29,7 @@ class GithubIdentification(
             ExAuthTable.select { ExAuthTable.externalUserId eq githubUserId }.limit(1).firstOrNull()?.let {
                 it[ExAuthTable.userId]
             } ?: run {
-                val userId = UsersTable.insert { it[enabled] = true }[UsersTable.id].value.toString()
+                val userId: UUID = UsersTable.insert { it[enabled] = true }[UsersTable.id].value
                 ExAuthTable.insert {
                     it[ExAuthTable.userId] = userId
                     it[socialService] = SocialService.GITHUB

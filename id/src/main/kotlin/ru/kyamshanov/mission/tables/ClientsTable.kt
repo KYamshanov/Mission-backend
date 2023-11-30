@@ -26,7 +26,7 @@ import org.jetbrains.exposed.sql.json.json
  * );
  */
 object ClientsTable : IdTable<String>(name = "mission-id.clients") {
-    override val id: Column<EntityID<String>> = varchar("id", 32).entityId()
+    override val id: Column<EntityID<String>> = varchar("id", 20).entityId()
     override val primaryKey = PrimaryKey(id)
 
     val redirectUrl = varchar("redirect_url", 200)

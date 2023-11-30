@@ -16,6 +16,6 @@ import ru.kyamshanov.mission.tables.Authorities.entityId
  * );
  */
 object UserAuthorities : Table(name = "mission-id.user_authorities") {
-    val userId = varchar("user_id", 36)
-    val authorityId = varchar("authority_id", 16)
+    val userId = uuid("user_id")
+    val authorityId = uuid("authority_id")
 }

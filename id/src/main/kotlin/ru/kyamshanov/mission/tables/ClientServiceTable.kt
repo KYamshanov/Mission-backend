@@ -13,7 +13,7 @@ import ru.kyamshanov.mission.client.models.SocialService
  */
 object ClientServiceTable : Table(name = "mission-id.client_service") {
 
-    val clientId = varchar("client_id", 36)
+    val clientId = varchar("client_id", 20)
     val socialServiceId = socialServiceEnumeration("social_service_id")
     val enabled = bool("enabled")
 }

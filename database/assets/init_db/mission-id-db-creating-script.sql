@@ -7,19 +7,18 @@ DROP TABLE IF EXISTS "mission-id".authorization CASCADE;
 DROP TABLE IF EXISTS "mission-id".credential CASCADE;
 DROP TABLE IF EXISTS "mission-id".ex_auth CASCADE;
 DROP TABLE IF EXISTS "mission-id".user_authorities CASCADE;
-DROP TABLE IF EXISTS "mission-id".clients CASCADE;
 DROP TABLE IF EXISTS "mission-id".client_service CASCADE;
 DROP TYPE IF EXISTS "mission-id".social_service CASCADE;
 
 CREATE TABLE "mission-id".users
 (
-    id      VARCHAR(36) PRIMARY KEY,
+    id      UUID PRIMARY KEY,
     enabled BOOLEAN NOT NULL
 );
 
 CREATE TABLE "mission-id".credential
 (
-    user_id  VARCHAR(36) PRIMARY KEY REFERENCES "mission-id".users (id),
+    user_id  UUID PRIMARY KEY REFERENCES "mission-id".users (id),
     username VARCHAR(30)  NOT NULL UNIQUE,
     password VARCHAR(500) NOT NULL
 );
@@ -27,22 +26,22 @@ CREATE TABLE "mission-id".credential
 
 CREATE TABLE "mission-id".authorities
 (
-    id     VARCHAR(16) PRIMARY KEY,
+    id     UUID PRIMARY KEY,
     scopes VARCHAR(500) NOT NULL
 );
 
 
 CREATE TABLE "mission-id".user_authorities
 (
-    user_id      VARCHAR(36) PRIMARY KEY REFERENCES "mission-id".users (id),
-    authority_id VARCHAR(16) NOT NULL REFERENCES "mission-id".authorities (id)
+    user_id      UUID PRIMARY KEY REFERENCES "mission-id".users (id),
+    authority_id UUID NOT NULL REFERENCES "mission-id".authorities (id)
 );
 
 CREATE TYPE "mission-id".social_service AS ENUM ('GITHUB');
 
 CREATE TABLE "mission-id".clients
 (
-    id                            VARCHAR(36) PRIMARY KEY,
+    id                            VARCHAR(20) PRIMARY KEY,
     redirect_url                  VARCHAR(200),
     scopes                        VARCHAR(1000) NOT NULL,
     issued_at                     TIMESTAMP DEFAULT (now()),
@@ -57,9 +56,9 @@ CREATE TABLE "mission-id".clients
 
 CREATE TABLE "mission-id".authorization
 (
-    id                             VARCHAR(36) PRIMARY KEY,
-    client_id                      VARCHAR(36)                 NOT NULL REFERENCES "mission-id".clients (id),
-    user_id                        VARCHAR(36)                 NULL REFERENCES "mission-id".users (id),
+    id                             UUID PRIMARY KEY,
+    client_id                      VARCHAR(20)                 NOT NULL REFERENCES "mission-id".clients (id),
+    user_id                        UUID                        NULL REFERENCES "mission-id".users (id),
     issued_at                      TIMESTAMP                   NOT NULL,
     authorization_grant_type       VARCHAR(200)                NULL,
     authorization_metadata         JSON                        NULL DEFAULT NULL,
@@ -79,7 +78,7 @@ CREATE TABLE "mission-id".authorization
 
 CREATE TABLE "mission-id".ex_auth
 (
-    user_id           VARCHAR(36)                 NOT NULL REFERENCES "mission-id".users (id),
+    user_id           UUID                        NOT NULL REFERENCES "mission-id".users (id),
     social_service_id "mission-id".social_service NOT NULL,
     external_user_id  VARCHAR(128)                NOT NULL
 );
@@ -87,7 +86,7 @@ CREATE TABLE "mission-id".ex_auth
 
 CREATE TABLE "mission-id".client_service
 (
-    client_id         VARCHAR(36)                 NOT NULL REFERENCES "mission-id".clients (id),
+    client_id         VARCHAR(20)                 NOT NULL REFERENCES "mission-id".clients (id),
     social_service_id "mission-id".social_service NOT NULL,
     enabled           BOOLEAN                     NOT NULL
 );

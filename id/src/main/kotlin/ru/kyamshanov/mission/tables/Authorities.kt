@@ -15,9 +15,6 @@ import org.jetbrains.exposed.sql.Table
  *     scopes VARCHAR(500) NOT NULL
  * );
  */
-object Authorities : IdTable<String>(name = "mission-id.authorities") {
-    override val id: Column<EntityID<String>> = varchar("id", 16).entityId()
-    override val primaryKey = PrimaryKey(id)
-
+object Authorities : UUIDTable(name = "mission-id.authorities") {
     val scopes = varchar("scopes", 500)
 }

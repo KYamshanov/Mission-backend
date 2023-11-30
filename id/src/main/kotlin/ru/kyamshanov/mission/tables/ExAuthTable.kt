@@ -18,7 +18,7 @@ import ru.kyamshanov.mission.client.models.SocialService
  * );
  */
 object ExAuthTable : Table(name = "mission-id.ex_auth") {
-    val userId = varchar("user_id", 36)
+    val userId = uuid("user_id")
     val socialService = socialServiceEnumeration("social_service_id")
     val externalUserId = varchar("external_user_id", 128)
 }
