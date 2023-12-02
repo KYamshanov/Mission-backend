@@ -7,9 +7,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import ru.kyamshanov.mission.point.database.entities.TaskPriority
+import ru.kyamshanov.mission.point.database.repositories.LabelCrudRepository
+import ru.kyamshanov.mission.point.database.repositories.LabelQueryRepository
 import ru.kyamshanov.mission.point.database.repositories.OrderedTaskQueryRepository
 import ru.kyamshanov.mission.point.domain.models.TaskEntity
 import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
+import ru.kyamshanov.mission.point.domain.models.LabelEntity
 import ru.kyamshanov.mission.point.domain.models.TaskOrderEntity
 import ru.kyamshanov.mission.point.domain.models.TaskStatus
 import ru.kyamshanov.mission.point.network.dtos.*
@@ -21,13 +24,16 @@ import java.time.LocalDateTime
 @RequestMapping("/point/private/")
 class PrivateController(
     private val taskCrudRepository: TaskCrudRepository,
-    private val taskOrderCrudRepository: OrderedTaskQueryRepository
+    private val taskOrderCrudRepository: OrderedTaskQueryRepository,
+    private val labelCrudRepository: LabelCrudRepository,
+    private val labelQueryRepository: LabelQueryRepository
 ) {
 
     @GetMapping("/attached")
     suspend fun getAttachedTasks(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
     ): ResponseEntity<AttachedTasksResponseDto> {
+        //TODO Рефакторинг. Also see: https://github.com/KYamshanov/Mission-backend/issues/19
         val tasksMap = taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf()).associateBy { it.id }
         val orderedTasks = if (tasksMap.isNotEmpty()) {
             val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
@@ -130,7 +136,9 @@ class PrivateController(
                         description = it.description,
                         updateTime = it.updateTime,
                         type = it.type.toDto(),
-                        editingRules = EditingRulesDto(isEditable = it.owner == userId)
+                        editingRules = EditingRulesDto(isEditable = it.owner == userId),
+                        labels = labelQueryRepository.selectByTaskId(it.id).toCollection(mutableListOf())
+                            .map { it.toDto() }
                     )
                 },
             HttpStatus.OK
@@ -246,3 +254,5 @@ class PrivateController(
         return ResponseEntity(HttpStatus.OK)
     }
 }
+
+fun LabelEntity.toDto() = LabelDto(id, title, color)

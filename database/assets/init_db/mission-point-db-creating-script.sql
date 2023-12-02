@@ -59,4 +59,32 @@ FROM tasks_order
 ORDER BY updated_at;
 
 
+/* Project part */
+DROP TABLE IF EXISTS projects;
 
+CREATE TABLE projects
+(
+    id          VARCHAR(32) PRIMARY KEY,
+    title       VARCHAR(200)  NOT NULL,
+    description VARCHAR(1000) NULL DEFAULT NULL,
+    owner       VARCHAR(36)   NOT NULL
+);
+
+/* Label part */
+DROP TABLE IF EXISTS label;
+DROP TABLE IF EXISTS task_label;
+
+CREATE TABLE label
+(
+    id         VARCHAR(32) PRIMARY KEY,
+    title      VARCHAR(30) NOT NULL,
+    owner      VARCHAR(36) NOT NULL,
+    color      BIGINT      NOT NULL,
+    project_id VARCHAR(32) NULL DEFAULT NULL REFERENCES projects (id) ON DELETE SET NULL
+);
+
+CREATE TABLE task_label
+(
+    task_id  VARCHAR(32) NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
+    label_id VARCHAR(32) NOT NULL REFERENCES label (id) ON DELETE CASCADE
+);

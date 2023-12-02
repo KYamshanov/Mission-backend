@@ -1,0 +1,430 @@
+openapi: "3.0.3"
+info:
+  title: "point API"
+  description: "point API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080"
+paths:
+  /point/private/attached:
+    get:
+      summary: "GET point/private/attached"
+      operationId: "getAttachedTasks"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/create:
+    post:
+      summary: "POST point/private/create"
+      operationId: "createTask"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequestDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/delete:
+    delete:
+      summary: "DELETE point/private/delete"
+      operationId: "deleteTask"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/edit:
+    patch:
+      summary: "PATCH point/private/edit"
+      operationId: "editTask"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditTaskRsDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/get:
+    get:
+      summary: "GET point/private/get"
+      operationId: "getTask"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/order:
+    post:
+      summary: "POST point/private/order"
+      operationId: "setOrderOfTask"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestOrderTaskDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/priority:
+    patch:
+      summary: "PATCH point/private/priority"
+      operationId: "setPriority"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "value"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            enum:
+              - "PRIMARY"
+              - "LOW"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+    delete:
+      summary: "DELETE point/private/priority"
+      operationId: "removePriority"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/search:
+    get:
+      summary: "GET point/private/search"
+      operationId: "search"
+      parameters:
+        - name: "value"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/status:
+    patch:
+      summary: "PATCH point/private/status"
+      operationId: "setTaskStatus"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "status"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            enum:
+              - "CREATED"
+              - "IN_PROCESSING"
+              - "COMPLETED"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/type:
+    patch:
+      summary: "PATCH point/private/type"
+      operationId: "setTaskType"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "type"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            enum:
+              - "TODAYS"
+              - "WEEKS"
+              - "UNKNOWN"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/label/set:
+    patch:
+      summary: "PATCH point/private/label/set"
+      operationId: "createTask"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetLabelRqDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/project/all:
+    get:
+      summary: "GET point/private/project/all"
+      operationId: "getProjects"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/project/create:
+    post:
+      summary: "POST point/private/project/create"
+      operationId: "createProject"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectsRqDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/label/all:
+    get:
+      summary: "GET point/private/label/all"
+      operationId: "getAllLabels"
+      parameters:
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+  /point/private/project/get:
+    get:
+      summary: "GET point/private/project/get"
+      operationId: "getProject"
+      parameters:
+        - name: "id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+        - name: "user-id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Object"
+components:
+  schemas:
+    Object:
+      type: "object"
+      properties: { }
+    CreateTaskRequestDto:
+      type: "object"
+      properties:
+        title:
+          type: "string"
+        description:
+          type: "string"
+        priority:
+          type: "string"
+          enum:
+            - "PRIMARY"
+            - "LOW"
+    EditTaskRsDto:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        title:
+          type: "string"
+        description:
+          type: "string"
+    RequestOrderTaskDto:
+      type: "object"
+      properties:
+        taskId:
+          type: "string"
+        putBefore:
+          type: "string"
+        newTaskBefore:
+          type: "string"
+        oldBeforeTask:
+          type: "string"
+        oldAfterTask:
+          type: "string"
+    SetLabelRqDto:
+      type: "object"
+      properties:
+        taskId:
+          type: "string"
+        labels:
+          type: "array"
+          items:
+            type: "string"
+    CreateProjectsRqDto:
+      type: "object"
+      properties:
+        title:
+          type: "string"
+        description:
+          type: "string"
