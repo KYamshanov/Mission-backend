@@ -14,7 +14,7 @@ data class LabelEntity(
     @Column("owner")
     val owner: String,
     @Column("project_id")
-    val projectId: String,
+    val projectId: String?,
     @Column("color")
     val color: Long,
 

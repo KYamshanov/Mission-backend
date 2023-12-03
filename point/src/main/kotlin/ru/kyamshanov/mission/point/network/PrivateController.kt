@@ -1,20 +1,13 @@
 package ru.kyamshanov.mission.point.network
 
 import kotlinx.coroutines.flow.toCollection
-import org.springframework.data.util.Pair
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import ru.kyamshanov.mission.point.database.entities.TaskPriority
-import ru.kyamshanov.mission.point.database.repositories.LabelCrudRepository
-import ru.kyamshanov.mission.point.database.repositories.LabelQueryRepository
-import ru.kyamshanov.mission.point.database.repositories.OrderedTaskQueryRepository
-import ru.kyamshanov.mission.point.domain.models.TaskEntity
-import ru.kyamshanov.mission.point.database.repositories.TaskCrudRepository
-import ru.kyamshanov.mission.point.domain.models.LabelEntity
-import ru.kyamshanov.mission.point.domain.models.TaskOrderEntity
-import ru.kyamshanov.mission.point.domain.models.TaskStatus
+import ru.kyamshanov.mission.point.database.repositories.*
+import ru.kyamshanov.mission.point.domain.models.*
 import ru.kyamshanov.mission.point.network.dtos.*
 import ru.kyamshanov.mission.point.utils.MovableLinkedList
 import ru.kyamshanov.mission.point.utils.MutablePair
@@ -26,7 +19,8 @@ class PrivateController(
     private val taskCrudRepository: TaskCrudRepository,
     private val taskOrderCrudRepository: OrderedTaskQueryRepository,
     private val labelCrudRepository: LabelCrudRepository,
-    private val labelQueryRepository: LabelQueryRepository
+    private val labelQueryRepository: LabelQueryRepository,
+    private val taskLabelCrudRepository: TaskLabelCrudRepository
 ) {
 
     @GetMapping("/attached")
@@ -101,6 +95,7 @@ class PrivateController(
     }
 
     @PostMapping("/create")
+    @Transactional
     suspend fun createTask(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
         @RequestBody(required = true) body: CreateTaskRequestDto
@@ -110,10 +105,15 @@ class PrivateController(
             description = body.description,
             creationTime = LocalDateTime.now(),
             owner = userId
-        )
+        ).let { taskCrudRepository.save(it) }
+
+        if (body.label != null) {
+            require(labelCrudRepository.findById(body.label)?.owner == userId) { "Label owner must be request user" }
+            taskLabelCrudRepository.save(TaskLabelEntity(entity.id, body.label))
+        }
 
         return ResponseEntity(
-            CreateTaskResponseDto(taskCrudRepository.save(entity).id),
+            CreateTaskResponseDto(entity.id),
             HttpStatus.OK
         )
     }
@@ -137,7 +137,7 @@ class PrivateController(
                         updateTime = it.updateTime,
                         type = it.type.toDto(),
                         editingRules = EditingRulesDto(isEditable = it.owner == userId),
-                        labels = labelQueryRepository.selectByTaskId(it.id).toCollection(mutableListOf())
+                        labels = labelQueryRepository.selectByTaskId(it.id, userId).toCollection(mutableListOf())
                             .map { it.toDto() }
                     )
                 },
@@ -203,30 +203,6 @@ class PrivateController(
             .also { assert(it.size == 1) { "Less or more one task have been updated. Count: ${it.size}" } }
         taskOrderCrudRepository.removeOrder(taskId)
         return ResponseEntity(HttpStatus.OK)
-    }
-
-    @GetMapping("/search")
-    @Transactional
-    suspend fun search(
-        @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
-        @RequestParam(required = true, name = "value") searchPhrase: String
-    ): ResponseEntity<AttachedTasksResponseDto> {
-        return ResponseEntity(
-            AttachedTasksResponseDto(
-                taskCrudRepository.findByTitleContainingAndOwner(searchPhrase, userId).toCollection(mutableListOf())
-                    .map {
-                        AttachedTasksResponseDto.TaskSlim(
-                            id = it.id,
-                            title = it.title,
-                            creationTime = it.creationTime,
-                            completionTime = it.completionTime,
-                            priority = it.priority,
-                            status = it.status,
-                            type = it.type.toDto(),
-                        )
-                    }),
-            HttpStatus.OK
-        )
     }
 
     @PatchMapping("/edit")

@@ -6,4 +6,5 @@ data class CreateTaskRequestDto(
     val title: String,
     val description: String,
     val priority: TaskPriority? = null,
+    val label: String?
 )

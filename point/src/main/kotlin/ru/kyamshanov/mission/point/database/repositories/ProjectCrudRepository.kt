@@ -16,4 +16,6 @@ interface ProjectCrudRepository : CoroutineCrudRepository<ProjectEntity, String>
     fun getAllByOwner(ownerId: String): Flow<ProjectEntity>
 
     suspend fun findByIdAndOwner(id: String, ownerId: String): ProjectEntity?
+
+    fun findByTitleContainingAndOwner(title: String, owner: String): Flow<ProjectEntity>
 }
