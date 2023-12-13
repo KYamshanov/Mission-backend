@@ -1,6 +1,13 @@
 ktor:
   deployment:
     port: $SERVER_PORT
+    sslPort: $SSL_PORT
+  security:
+    ssl:
+      keyStore: $keyStore
+      keyAlias: $keyAlias
+      keyStorePassword: $keyStorePassword
+      privateKeyPassword: $privateKeyPassword
   application:
     modules:
       - ru.kyamshanov.mission.ApplicationKt.module

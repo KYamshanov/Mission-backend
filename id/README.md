@@ -36,3 +36,9 @@
 # Prototyping
 
 ![raw scheme](./resources/raw_scheme.png)
+
+# additional info
+
+for local setup ssl you can generate certificate by using module GeneratorSslKeys and Main.kt. 
+After execute the main method keystore.jks will be generated in build folder GeneratorSslKeys module.
+For launch docker please copy **id/GeneratorSslKeys/build/keystore.jks** to **mission-docker/asstes** 
