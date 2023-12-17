@@ -5,7 +5,8 @@
             "name": "Up backend",
             "dependsOn": [
                 "Build point",
-                "Build id"
+                "Build id",
+                "Build gateway"
             ],
             "files": [
                 "$PROJECT_DIR$/docker-compose.yml"
@@ -24,6 +25,14 @@
             "type": "gradle",
             "name": "Build id",
             "workingDir": "../id",
+            "tasks": [
+                "build"
+            ],
+        },
+        {
+            "type": "gradle",
+            "name": "Build gateway",
+            "workingDir": "../gateway",
             "tasks": [
                 "build"
             ],

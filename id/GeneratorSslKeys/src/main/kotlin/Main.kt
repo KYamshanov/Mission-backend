@@ -4,7 +4,7 @@ import io.ktor.network.tls.certificates.*
 import java.io.*
 
 fun main() {
-    val keyStoreFile = File("GeneratorSslKeys/build/keystore.jks")
+    val keyStoreFile = File("GeneratorSslKeys/build/certs/keystore.jks")
     val keyStore = buildKeyStore {
         certificate("idsign") {
             password = "local-idsign-password-HjkrP"

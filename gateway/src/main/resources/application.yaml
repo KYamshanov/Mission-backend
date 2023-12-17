@@ -3,6 +3,15 @@ logging.level:
   org.springframework.security: TRACE
   org.springframework.web.reactive.function.client: TRACE
 
+server:
+  ssl:
+    enabled: true
+    key-alias: ${keyAlias}
+    key-store-password: ${keyStorePassword}
+    key-store: ${keyStore}
+    key-store-type: JKS
+    key-password: ${privateKeyPassword}
+
 spring:
   security:
     oauth2:
@@ -27,6 +36,6 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
         - id: oauth
-          uri: http://auth
+          uri: http://auth:80
           predicates:
             - Path=/oauth2/**

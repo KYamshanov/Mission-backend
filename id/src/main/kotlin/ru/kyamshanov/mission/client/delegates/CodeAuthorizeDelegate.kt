@@ -24,7 +24,7 @@ class CodeAuthorizeDelegate(
                 clientRedirectUrl.replaceFirst(":*/", ":${redirectUri.port}/")
             } else clientRedirectUrl
 
-            assert(callbackUrl == redirectUri.toString())
+            check(callbackUrl == redirectUri.toString()){ "Redirect uri has not been matched with the valid value in database" }
 
             call.sessions.set(
                 OAuthSessionConfig(

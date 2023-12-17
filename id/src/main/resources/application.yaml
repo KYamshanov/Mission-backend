@@ -14,11 +14,11 @@ ktor:
 oauth:
   issuer: "http://auth"
   github:
-    urlProvider: "http://127.0.0.1:6543/github/authorized"
+    urlProvider: $githubUrlProvider
     clientId: $clientId
     clientSecret: $clientSecret
 database:
   postgresql:
     url: $postgresql_url
-    user: postgres
-    password: private_password
+    user: $postgresql_user
+    password: $postgresql_password

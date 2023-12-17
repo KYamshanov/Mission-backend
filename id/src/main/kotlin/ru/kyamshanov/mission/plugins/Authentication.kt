@@ -9,7 +9,7 @@ import ru.kyamshanov.mission.client.models.SocialService
 
 fun Application.authentication(httpClient: HttpClient, auth: Auth) = install(Authentication) {
     oauth("auth-oauth-github") {
-        urlProvider = { "http://127.0.0.1:6543/github/authorized" }
+        urlProvider = { this@authentication.environment.config.property("oauth.github.urlProvider").getString() }
         providerLookup = {
             OAuthServerSettings.OAuth2ServerSettings(
                 name = "github",
