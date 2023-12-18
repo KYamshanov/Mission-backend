@@ -44,9 +44,10 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     val auth = AuthImpl(
         ClientFactoryImpl(
             ClientStorageImpl(
-                IdentificationServiceFactoryImpl(
+                identificationServiceFactory = IdentificationServiceFactoryImpl(
                     GithubIdentification(httpClient)
-                )
+                ),
+                logger = log
             ), ClientInMemoryKeeperImpl()
         ), httpClient, issuer
     )

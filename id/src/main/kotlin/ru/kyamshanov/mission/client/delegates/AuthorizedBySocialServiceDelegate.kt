@@ -15,18 +15,18 @@ import ru.kyamshanov.mission.plugins.generateNewToken
 import ru.kyamshanov.mission.tables.AuthorizationMetadata
 import ru.kyamshanov.mission.tables.AuthorizationTable
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit.MILLIS
 
 class AuthorizedBySocialServiceDelegate(
     private val clientId: String,
     private val socialService: SocialService,
+    private val authenticationCodeLifetimeInMs: Long
 ) : AuthorizedDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
-
             val principal: OAuthAccessTokenResponse.OAuth2? = call.principal()
-            println("Github cccess token: ${principal?.accessToken}")
+            val oAuthConfig = checkNotNull(call.sessions.get<OAuthSessionConfig>())
 
-            val oAuthConfig = requireNotNull(call.sessions.get<OAuthSessionConfig>())
             call.sessions.clear<OAuthSessionConfig>()
 
             val authorizationCode = generateNewToken()
@@ -37,7 +37,7 @@ class AuthorizedBySocialServiceDelegate(
                     it[clientId] = this@AuthorizedBySocialServiceDelegate.clientId
                     it[issuedAt] = LocalDateTime.now()
                     it[authenticationCode] = authorizationCode
-                    it[authenticationCodeExpiresAt] = LocalDateTime.now().plusMinutes(5)
+                    it[authenticationCodeExpiresAt] = LocalDateTime.now().plus(authenticationCodeLifetimeInMs, MILLIS)
                     it[scopes] = oAuthConfig.scopes
                     it[authorizationMetadata] =
                         AuthorizationMetadata(oAuthConfig.codeChallenge, principal!!.accessToken)

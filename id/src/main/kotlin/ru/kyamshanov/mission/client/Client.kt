@@ -15,8 +15,18 @@ interface Client {
 
     val isRefreshTokenSupported: Boolean
 
+    val authenticationCodeLifeTimeInMs: Long
+
+    /**
+     * process to authorize user
+     * @return delegate to intercept ktor pipeline
+     */
     fun authorize(responseType: String, scope: String, state: String): Result<AuthorizeDelegate>
 
+    /**
+     * process user authorized by social service [service]
+     * @return the delegate to process the user authorization
+     */
     fun authorizedBy(service: SocialService): Result<AuthorizedDelegate>
 
 }

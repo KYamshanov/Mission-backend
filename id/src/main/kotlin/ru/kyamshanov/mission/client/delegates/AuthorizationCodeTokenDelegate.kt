@@ -31,14 +31,16 @@ class AuthorizationCodeTokenDelegate(
 ) : TokenDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
-            val authCode: String = requireNotNull(formParameters["code"])
-            val codeVerifier: String = requireNotNull(formParameters["code_verifier"])
+            call.request.headers
+            val authCode: String = checkNotNull(formParameters["code"]) { "the code parameter required" }
+            val codeVerifier: String = checkNotNull(formParameters["the code_verifier parameter required"])
             val clientId: String
             val codeChallenge: String
             val token: String
             val scopes: String
             val socialService: SocialService
             val authorizationId: UUID
+            val authenticationCodeExpiresAt: LocalDateTime
 
             transaction {
                 AuthorizationTable.select {
@@ -51,11 +53,15 @@ class AuthorizationCodeTokenDelegate(
                 scopes = it[AuthorizationTable.scopes]
                 socialService = it[AuthorizationTable.socialService]
                 authorizationId = it[AuthorizationTable.id].value
+                authenticationCodeExpiresAt = it[AuthorizationTable.authenticationCodeExpiresAt]
             }
 
-            assert(getCodeChallenge(codeVerifier) == codeChallenge)
+            check(LocalDateTime.now() < authenticationCodeExpiresAt) { "Authorization code has been expired" }
+            check(getCodeChallenge(codeVerifier) == codeChallenge) { "Code challenge verification failed" }
 
-            val client = clientFactory.create(clientId).getOrThrow()
+            val client = clientFactory.create(clientId).getOrThrow().also {
+                //there will be verification client secret
+            }
             val userId = client.identificationServices[socialService]!!.identify(token)
 
             //Generation access and refresh token

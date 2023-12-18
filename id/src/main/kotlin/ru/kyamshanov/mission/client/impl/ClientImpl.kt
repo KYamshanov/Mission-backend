@@ -5,10 +5,7 @@ import ru.kyamshanov.mission.client.AuthorizedDelegate
 import ru.kyamshanov.mission.client.Client
 import ru.kyamshanov.mission.client.delegates.AuthorizedBySocialServiceDelegate
 import ru.kyamshanov.mission.client.delegates.CodeAuthorizeDelegate
-import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
-import ru.kyamshanov.mission.client.models.ResponseType
-import ru.kyamshanov.mission.client.models.Scope
-import ru.kyamshanov.mission.client.models.SocialService
+import ru.kyamshanov.mission.client.models.*
 import ru.kyamshanov.mission.identification.IdentificationServiceFactory
 import ru.kyamshanov.mission.plugins.generateNewToken
 
@@ -21,12 +18,20 @@ data class ClientImpl(
     private val socialServices: List<SocialService>,
     private val identificationServiceFactory: IdentificationServiceFactory,
     override val accessTokenLifetimeInMS: Long,
-    override val refreshTokenLifetimeInMS: Long
+    override val refreshTokenLifetimeInMS: Long,
+    override val authenticationCodeLifeTimeInMs: Long,
+    private val rawClientAuthenticationMethod: String?
 ) : Client {
 
     override val identificationServices = socialServices.associateWith { identificationServiceFactory.create(it) }
     override val isRefreshTokenSupported: Boolean =
         authorizationGrantTypes.contains(AuthorizationGrantTypes.REFRESH_TOKEN)
+
+    private val clientAuthenticationMethod: ClientAuthenticationMethod? = when (rawClientAuthenticationMethod) {
+        "basic" -> ClientAuthenticationMethod.BASIC
+        null -> null
+        else -> throw IllegalStateException("Client authentication method is invalid")
+    }
 
     override fun authorize(responseType: String, scope: String, state: String): Result<AuthorizeDelegate> =
         runCatching {
@@ -34,14 +39,16 @@ data class ClientImpl(
 
             when (authorizationResponseTypes.find { it.stringValue == responseType }) {
                 ResponseType.CODE -> CodeAuthorizeDelegate(clientId, scope, redirectUrl, state, generateNewToken())
-                ResponseType.TOKEN -> TODO()
-                null -> TODO()
+                ResponseType.TOKEN -> TODO("Authorization by token is not supported now")
+                null -> throw IllegalStateException("Authorization response types is invalid")
             }
         }
 
     override fun authorizedBy(service: SocialService): Result<AuthorizedDelegate> = runCatching {
         AuthorizedBySocialServiceDelegate(
-            clientId, service
+            clientId = clientId,
+            socialService = service,
+            authenticationCodeLifetimeInMs = authenticationCodeLifeTimeInMs
         )
     }
 

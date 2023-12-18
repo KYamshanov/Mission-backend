@@ -6,6 +6,9 @@
 Страница авторизации представляет форму с вводом логина/пароля и возможностью авторизации через соц. сети
 сервис реализует протокол OAuth2.1
 
+## Available authorizations flow
+1) Authorization code with PCKE (with refresh code)
+
 ## Technologies used
 
 Используемые технологии:
@@ -41,4 +44,3 @@
 
 for local setup ssl you can generate certificate by using module GeneratorSslKeys and Main.kt. 
 After execute the main method keystore.jks will be generated in build folder GeneratorSslKeys module.
-For launch docker please copy **id/GeneratorSslKeys/build/keystore.jks** to **mission-docker/asstes** 

@@ -14,3 +14,5 @@ interface AuthorizeDelegate : AuthDelegate
 interface TokenDelegate : AuthDelegate
 
 interface AuthorizedDelegate : AuthDelegate
+
+interface ClientAuthorizationDelegate : AuthDelegate
