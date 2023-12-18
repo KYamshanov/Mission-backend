@@ -6,8 +6,9 @@ import ru.kyamshanov.mission.dto.OAuthSessionConfig
 
 fun Application.configureSession() {
     install(Sessions) {
+        //TODO("Store session information in REDIS")
         cookie<OAuthSessionConfig>("ID_SESSION", SessionStorageMemory()) {
-            //cookie.maxAgeInSeconds = 120
+            cookie.maxAgeInSeconds = 120
         }
     }
 }

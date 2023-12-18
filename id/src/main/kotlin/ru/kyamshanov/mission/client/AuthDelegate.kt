@@ -11,6 +11,8 @@ sealed interface AuthDelegate {
 
 interface AuthorizeDelegate : AuthDelegate
 
-interface TokenDelegate : AuthDelegate
+interface GetTokenDelegate : AuthDelegate
 
-interface AuthorizedDelegate : AuthDelegate
+interface AuthenticationGrantedDelegate : AuthDelegate
+
+interface ClientAuthorizationDelegate : AuthDelegate

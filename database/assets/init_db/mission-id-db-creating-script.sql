@@ -103,7 +103,12 @@ VALUES ('desktop-client',
         'code',
         '2025-11-09 12:33:32.000000',
         'null',
-        null);
+        '{
+          "accessTokenLifetimeInMS": 60000,
+          "refreshTokenLifetimeInMS": 3600000,
+          "authenticationCodeLifeTimeInMs": 30000,
+          "secret": "secret"
+        }');
 
 INSERT INTO "mission-id".client_service
 VALUES ('desktop-client',

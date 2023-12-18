@@ -9,16 +9,18 @@ import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import ru.kyamshanov.mission.authorization.Auth
 import ru.kyamshanov.mission.client.ClientFactory
-import ru.kyamshanov.mission.client.delegates.AuthorizationCodeTokenDelegate
-import ru.kyamshanov.mission.client.delegates.RefreshTokenDelegate
+import ru.kyamshanov.mission.client.delegates.TokenByAuthorizationCodeDelegate
+import ru.kyamshanov.mission.client.delegates.RefreshGetTokenDelegate
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
+import ru.kyamshanov.mission.security.SimpleCipher
 
 class AuthImpl(
     private val clientFactory: ClientFactory,
     private val httpClient: HttpClient,
     private val issuerUrl: String,
+    private val tokenCipher: SimpleCipher,
 ) : Auth {
 
     override suspend fun authorize(pipeline: PipelineContext<Unit, ApplicationCall>) {
@@ -43,13 +45,14 @@ class AuthImpl(
                 requireNotNull(formParameters["grant_type"].toString()).let { str -> AuthorizationGrantTypes.entries.first { it.stringValue == str } }
 
             val d = when (grantType) {
-                AuthorizationGrantTypes.AUTHORIZATION_CODE -> AuthorizationCodeTokenDelegate(
+                AuthorizationGrantTypes.AUTHORIZATION_CODE -> TokenByAuthorizationCodeDelegate(
                     issuerUrl = issuerUrl,
                     clientFactory = clientFactory,
                     formParameters = formParameters,
+                    tokenCipher = tokenCipher
                 )
 
-                AuthorizationGrantTypes.REFRESH_TOKEN -> RefreshTokenDelegate(
+                AuthorizationGrantTypes.REFRESH_TOKEN -> RefreshGetTokenDelegate(
                     issuerUrl = issuerUrl,
                     clientFactory = clientFactory,
                     formParameters = formParameters,
@@ -67,9 +70,6 @@ class AuthImpl(
         val formParameters = call.receiveParameters()
         val csrfToken = requireNotNull(formParameters["_csrf"].toString())
         val sessionConfig = requireNotNull(call.sessions.get<OAuthSessionConfig>())
-
-        println("csrfToken ${csrfToken} saved: ${sessionConfig.csrfToken}")
-
         if (csrfToken != sessionConfig.csrfToken) throw IllegalStateException("Csrf is not valid")
     }
 

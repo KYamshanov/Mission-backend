@@ -21,6 +21,10 @@ services:
       keyAlias: ${keyAlias}
       keyStorePassword: ${keyStorePassword}
       privateKeyPassword: ${privateKeyPassword}
+      tokenKeyStore: '/certs/tokenkeystore.jks'
+      tokenKeyAlias: ${tokenKeyAlias}
+      tokenKeyStorePassword: ${keyStorePassword}
+      tokenKeyPassword: ${tokenKeyPassword}
       SSL_PORT: 443
       githubUrlProvider: ${githubUrlProvider}
       postgresql_user: ${postgresql_user}

@@ -13,7 +13,7 @@ import ru.kyamshanov.mission.tables.UsersTable
 import java.util.*
 
 class GithubIdentification(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) : GithubIdentificationService {
 
 
@@ -22,7 +22,7 @@ class GithubIdentification(
             header("Accept", "application/vnd.github+json")
             header("X-GitHub-Api-Version", "2022-11-28")
             header("Authorization", "Bearer $githubAccessToken")
-        }.body<GithubUserRsDto>().login
+        }.body<GithubUserRsDto>().id.toString()
 
 
         return transaction {

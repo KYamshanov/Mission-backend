@@ -15,6 +15,9 @@ import ru.kyamshanov.mission.client.impl.ClientStorageImpl
 import ru.kyamshanov.mission.identification.GithubIdentification
 import ru.kyamshanov.mission.identification.IdentificationServiceFactoryImpl
 import ru.kyamshanov.mission.plugins.*
+import ru.kyamshanov.mission.security.SymmetricCipher
+import java.io.FileInputStream
+import java.security.KeyStore
 
 /**
  * Main function for initialize application
@@ -39,16 +42,29 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     dbConnect()
     configureSession()
     freeMarker()
+
     val issuer = this.environment.config.property("oauth.issuer").getString()
+    val tokenKeyAlias = this.environment.config.property("oauth.security.cipher.keyAlias").getString()
+    val tokenKeyPassword = this.environment.config.property("oauth.security.cipher.keyPassword").getString()
+    val tokenKeyStore = this.environment.config.property("oauth.security.cipher.keyStore").getString()
+    val tokenKeyStorePassword = this.environment.config.property("oauth.security.cipher.keyStorePassword").getString()
+
+    val tokenCipher = SymmetricCipher(
+        KeyStore.getInstance(KeyStore.getDefaultType())
+            .apply { load(FileInputStream(tokenKeyStore), tokenKeyStorePassword.toCharArray()) },
+        tokenKeyAlias, tokenKeyPassword.toCharArray()
+    )
 
     val auth = AuthImpl(
         ClientFactoryImpl(
             ClientStorageImpl(
-                IdentificationServiceFactoryImpl(
+                identificationServiceFactory = IdentificationServiceFactoryImpl(
                     GithubIdentification(httpClient)
-                )
+                ),
+                logger = log,
+                tokenCipher = tokenCipher
             ), ClientInMemoryKeeperImpl()
-        ), httpClient, issuer
+        ), httpClient, issuer, tokenCipher
     )
     authentication(httpClient, auth)
     configureRouting(

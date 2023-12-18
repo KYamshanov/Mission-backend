@@ -12,6 +12,5 @@ interface Auth {
 
     suspend fun loginBy(service: SocialService, call: ApplicationCall)
 
-
     suspend fun authorizedBy(service: SocialService, pipeline: PipelineContext<Unit, ApplicationCall>)
 }

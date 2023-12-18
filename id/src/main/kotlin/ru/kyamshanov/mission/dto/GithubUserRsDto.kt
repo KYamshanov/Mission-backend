@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GithubUserRsDto(
-    val login: String
+    val id: Long
 )
