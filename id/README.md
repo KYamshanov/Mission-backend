@@ -15,6 +15,7 @@
 1) ktor
 2) exposed
 3) jjwt
+4) postgres database
 
 ## Documentation in pictures
 

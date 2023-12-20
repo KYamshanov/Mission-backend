@@ -7,21 +7,24 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
-import ru.kyamshanov.mission.authorization.Auth
+import ru.kyamshanov.mission.authorization.AuthInterceptor
+import ru.kyamshanov.mission.authorization.AuthorizationRepository
+import ru.kyamshanov.mission.authorization.UserRepository
 import ru.kyamshanov.mission.client.ClientFactory
+import ru.kyamshanov.mission.client.delegates.RefreshTokenDelegate
 import ru.kyamshanov.mission.client.delegates.TokenByAuthorizationCodeDelegate
-import ru.kyamshanov.mission.client.delegates.RefreshGetTokenDelegate
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
 import ru.kyamshanov.mission.security.SimpleCipher
 
-class AuthImpl(
+class AuthInterceptorImpl(
     private val clientFactory: ClientFactory,
     private val httpClient: HttpClient,
-    private val issuerUrl: String,
     private val tokenCipher: SimpleCipher,
-) : Auth {
+    private val authorizationRepository: AuthorizationRepository,
+    private val userRepository: UserRepository,
+) : AuthInterceptor {
 
     override suspend fun authorize(pipeline: PipelineContext<Unit, ApplicationCall>) {
         pipeline.runCatching {
@@ -46,16 +49,17 @@ class AuthImpl(
 
             val d = when (grantType) {
                 AuthorizationGrantTypes.AUTHORIZATION_CODE -> TokenByAuthorizationCodeDelegate(
-                    issuerUrl = issuerUrl,
                     clientFactory = clientFactory,
                     formParameters = formParameters,
-                    tokenCipher = tokenCipher
+                    tokenCipher = tokenCipher,
+                    authorizationRepository = authorizationRepository
                 )
 
-                AuthorizationGrantTypes.REFRESH_TOKEN -> RefreshGetTokenDelegate(
-                    issuerUrl = issuerUrl,
+                AuthorizationGrantTypes.REFRESH_TOKEN -> RefreshTokenDelegate(
                     clientFactory = clientFactory,
                     formParameters = formParameters,
+                    authorizationRepository = authorizationRepository,
+                    userRepository = userRepository
                 )
             }
 

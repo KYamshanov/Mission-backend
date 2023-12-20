@@ -8,10 +8,14 @@ import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.doublereceive.*
 import kotlinx.serialization.json.Json
-import ru.kyamshanov.mission.authorization.impl.AuthImpl
+import ru.kyamshanov.mission.authorization.impl.AuthInterceptorImpl
+import ru.kyamshanov.mission.authorization.impl.AuthorizationDatabaseRepository
+import ru.kyamshanov.mission.authorization.impl.UserDatabaseRepository
 import ru.kyamshanov.mission.client.impl.ClientFactoryImpl
 import ru.kyamshanov.mission.client.impl.ClientInMemoryKeeperImpl
 import ru.kyamshanov.mission.client.impl.ClientStorageImpl
+import ru.kyamshanov.mission.client.issuer.SecureRandomTokenIssuer
+import ru.kyamshanov.mission.client.issuer.SignedJwtSigner
 import ru.kyamshanov.mission.identification.GithubIdentification
 import ru.kyamshanov.mission.identification.IdentificationServiceFactoryImpl
 import ru.kyamshanov.mission.plugins.*
@@ -55,19 +59,33 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
         tokenKeyAlias, tokenKeyPassword.toCharArray()
     )
 
-    val auth = AuthImpl(
-        ClientFactoryImpl(
-            ClientStorageImpl(
+    val jwtSigner = SignedJwtSigner(issuer)
+    val tokenIssuer = SecureRandomTokenIssuer()
+
+    val authorizationRepository = AuthorizationDatabaseRepository()
+    val userRepository = UserDatabaseRepository()
+
+    val auth = AuthInterceptorImpl(
+        clientFactory = ClientFactoryImpl(
+            clientStorage = ClientStorageImpl(
                 identificationServiceFactory = IdentificationServiceFactoryImpl(
-                    GithubIdentification(httpClient)
+                    githubIdentification = GithubIdentification(
+                        httpClient = httpClient,
+                        userRepository = userRepository
+                    )
                 ),
                 logger = log,
-                tokenCipher = tokenCipher
-            ), ClientInMemoryKeeperImpl()
-        ), httpClient, issuer, tokenCipher
+                tokenCipher = tokenCipher,
+                jwtSigner = jwtSigner,
+                tokenIssuer = tokenIssuer,
+                authorizationRepository = authorizationRepository
+            ), clientInMemoryKeeper = ClientInMemoryKeeperImpl()
+        ),
+        httpClient = httpClient,
+        tokenCipher = tokenCipher,
+        authorizationRepository = authorizationRepository,
+        userRepository = userRepository
     )
     authentication(httpClient, auth)
-    configureRouting(
-        httpClient, auth
-    )
+    configureRouting(httpClient, auth)
 }

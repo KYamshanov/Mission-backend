@@ -1,6 +1,5 @@
 package ru.kyamshanov.mission.plugins
 
-import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Jwks
 import io.jsonwebtoken.security.RsaPublicJwk
 import io.ktor.client.*
@@ -8,21 +7,16 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import ru.kyamshanov.mission.authorization.Auth
+import ru.kyamshanov.mission.authorization.AuthInterceptor
+import ru.kyamshanov.mission.client.issuer.keyPair
+import ru.kyamshanov.mission.client.issuer.kid
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.JwkDto
 import ru.kyamshanov.mission.dto.JwksRsDto
 import ru.kyamshanov.mission.dto.OpenIdConfigRsDto
-import java.security.KeyPair
-import java.security.MessageDigest
-import java.security.SecureRandom
-import java.util.*
 
 
-val keyPair: KeyPair = Jwts.SIG.RS256.keyPair().build() //or RS384, RS512, PS256, etc...
-val kid = UUID.randomUUID().toString()
-
-fun Application.configureRouting(httpClient: HttpClient, auth: Auth) {
+fun Application.configureRouting(httpClient: HttpClient, authInterceptor: AuthInterceptor) {
     routing {
         get("/.well-known/openid-configuration") {
             val issuer = this@configureRouting.environment.config.property("oauth.issuer").getString()
@@ -85,11 +79,11 @@ fun Application.configureRouting(httpClient: HttpClient, auth: Auth) {
         }
 
         get("/oauth2/authorize") {
-            auth.authorize(this)
+            authInterceptor.authorize(this)
         }
 
         post("/oauth2/token") {
-            auth.token(this)
+            authInterceptor.token(this)
         }
 
 
@@ -97,31 +91,7 @@ fun Application.configureRouting(httpClient: HttpClient, auth: Auth) {
 
             post("/auth/github") { }
 
-            get("/github/authorized") { auth.authorizedBy(SocialService.GITHUB, this) }
+            get("/github/authorized") { authInterceptor.authorizedBy(SocialService.GITHUB, this) }
         }
     }
-}
-
-private val secureRandom: SecureRandom = SecureRandom()
-
-private val base64Encoder: Base64.Encoder = Base64.getUrlEncoder()
-
-fun generateRefreshToken(): String {
-    val randomBytes = ByteArray(156)
-    secureRandom.nextBytes(randomBytes)
-    return base64Encoder.encodeToString(randomBytes)
-}
-
-fun generateNewToken(): String {
-    val randomBytes = ByteArray(95)
-    secureRandom.nextBytes(randomBytes)
-    return base64Encoder.encodeToString(randomBytes) //Code length == 128
-}
-
-fun getCodeChallenge(codeVerifier: String): String {
-    val bytes: ByteArray = codeVerifier.toByteArray(Charsets.US_ASCII)
-    val messageDigest = MessageDigest.getInstance("SHA-256")
-    messageDigest.update(bytes, 0, bytes.size)
-    val digest = messageDigest.digest()
-    return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
 }

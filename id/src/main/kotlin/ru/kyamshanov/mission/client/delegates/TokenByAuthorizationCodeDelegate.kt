@@ -1,62 +1,43 @@
 package ru.kyamshanov.mission.client.delegates
 
-import io.jsonwebtoken.Jwts
 import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
+import ru.kyamshanov.mission.authorization.AuthorizationRepository
 import ru.kyamshanov.mission.client.ClientFactory
 import ru.kyamshanov.mission.client.GetTokenDelegate
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.TokensRsDto
-import ru.kyamshanov.mission.plugins.generateRefreshToken
-import ru.kyamshanov.mission.plugins.getCodeChallenge
-import ru.kyamshanov.mission.plugins.keyPair
-import ru.kyamshanov.mission.plugins.kid
 import ru.kyamshanov.mission.security.SimpleCipher
-import ru.kyamshanov.mission.tables.AuthorizationTable
-import java.sql.Timestamp
+import java.security.MessageDigest
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 class TokenByAuthorizationCodeDelegate(
-    private val issuerUrl: String,
     private val clientFactory: ClientFactory,
     private val formParameters: Parameters,
-    private val tokenCipher: SimpleCipher
+    private val tokenCipher: SimpleCipher,
+    private val authorizationRepository: AuthorizationRepository,
 ) : GetTokenDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
             call.request.headers
             val authCode = checkNotNull(formParameters["code"]) { "the code parameter required" }
             val codeVerifier = checkNotNull(formParameters["code_verifier"]) { "the code_verifier parameter required" }
-            val clientId: String
-            val codeChallenge: String
-            val token: String
-            val scopes: String
-            val socialService: SocialService
-            val authorizationId: UUID
-            val authenticationCodeExpiresAt: LocalDateTime
 
-            transaction {
-                AuthorizationTable.select {
-                    AuthorizationTable.authenticationCode eq authCode
-                }.limit(1).single()
-            }.also {
-                clientId = it[AuthorizationTable.clientId]
-                codeChallenge = it[AuthorizationTable.authorizationMetadata].codeChallenge
-                token = it[AuthorizationTable.authorizationMetadata].token.let { token -> tokenCipher.decrypt(token) }
-                scopes = it[AuthorizationTable.scopes]
-                socialService = it[AuthorizationTable.socialService]
-                authorizationId = it[AuthorizationTable.id].value
-                authenticationCodeExpiresAt = it[AuthorizationTable.authenticationCodeExpiresAt]
-            }
+            val authorizationModel = authorizationRepository.findFirstByAuthorizationCode(authCode)
+            checkNotNull(authorizationModel.metadata) { "Auth metadata has not been established" }
+            checkNotNull(authorizationModel.socialService) { "Social service has not been established" }
+            checkNotNull(authorizationModel.authorizationId) { "Authorization id has not been established" }
+
+            val clientId: String = authorizationModel.clientId
+            val codeChallenge: String = authorizationModel.metadata.codeChallenge
+            val token: String = authorizationModel.metadata.encryptedToken.let { token -> tokenCipher.decrypt(token) }
+            val scopes: String = authorizationModel.scopes
+            val socialService: SocialService = authorizationModel.socialService
+            val authenticationCodeExpiresAt: LocalDateTime = authorizationModel.authenticationCodeExpiresAt
 
             check(LocalDateTime.now() < authenticationCodeExpiresAt) { "Authorization code has been expired" }
             check(getCodeChallenge(codeVerifier) == codeChallenge) { "Code challenge verification failed" }
@@ -65,57 +46,40 @@ class TokenByAuthorizationCodeDelegate(
                 .also { it.clientAuthorization().getOrThrow().execute(pipeline, httpClient) }
             val userId = client.identificationServices[socialService]!!.identify(token)
 
-            //Generation access and refresh token
 
-            val accessTokenExpiresAt = LocalDateTime.now().plus(client.accessTokenLifetimeInMS, ChronoUnit.MILLIS)
-            val accessToken = Jwts.builder()
-                .header()
-                .keyId(kid)
-                .and()
-                .subject(userId.toString())
-                .audience().add(client.clientId)
-                .and()
-                .claim("scope", scopes)
-                .claim("iss", issuerUrl)
-                .claim("exp", Timestamp.valueOf(accessTokenExpiresAt).time)
-                .signWith(keyPair.private)
-                .compact()
-            val refreshTokenExpiresAt: Date?
-            val refreshToken: String?
-
-            if (client.isRefreshTokenSupported) {
-                refreshToken = generateRefreshToken()
-                refreshTokenExpiresAt = Date(System.currentTimeMillis() + client.refreshTokenLifetimeInMS)
-            } else {
-                refreshToken = null
-                refreshTokenExpiresAt = null
-            }
-
-            //Saving
-            transaction {
-                AuthorizationTable.update({ AuthorizationTable.id eq authorizationId }) {
-                    it[AuthorizationTable.userId] = userId
-                    it[issuedAt] = LocalDateTime.now()
-                    it[AuthorizationTable.accessTokenExpiresAt] = accessTokenExpiresAt
-                    it[accessTokenValue] = accessToken
-                    if (refreshToken != null) {
-                        it[refreshTokenValue] = refreshToken
-                        it[refreshTokenIssuedAt] = LocalDateTime.now()
-                    }
-                    if (refreshTokenExpiresAt != null) it[AuthorizationTable.refreshTokenExpiresAt] =
-                        LocalDateTime.ofInstant(refreshTokenExpiresAt.toInstant(), ZoneId.systemDefault())
-                }.also {
-                    if (it != 1) throw IllegalStateException("There is was updated not one entity in the database at obtaining token. [$it]")
+            val response = client.generateJwtTokens(userId, scopes)
+                .let { (accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt) ->
+                    authorizationModel.copy(
+                        userId = userId,
+                        accessTokenIssuedAt = LocalDateTime.now(),
+                        accessTokenExpiresAt = accessTokenExpiresAt,
+                        accessToken = accessToken,
+                        refreshToken = refreshToken,
+                        refreshTokenExpiresAt = refreshTokenExpiresAt,
+                        refreshTokenIssuedAt = LocalDateTime.now()
+                    )
                 }
-            }
-            val response = TokensRsDto(
-                accessToken = accessToken,
-                refreshToken = refreshToken,
-                scope = scopes,
-                tokenType = "Bearer",
-                expiresIn = client.accessTokenLifetimeInMS / 1000
-            )
+                .let {
+                    checkNotNull(it.accessToken)
+
+                    authorizationRepository.updateAuthData(it)
+                    TokensRsDto(
+                        accessToken = it.accessToken,
+                        refreshToken = it.refreshToken,
+                        scope = scopes,
+                        tokenType = "Bearer",
+                        expiresIn = client.accessTokenLifetimeInMS / 1000
+                    )
+                }
+
             call.respond(response)
         }
 
+    private fun getCodeChallenge(codeVerifier: String): String {
+        val bytes: ByteArray = codeVerifier.toByteArray(Charsets.US_ASCII)
+        val messageDigest = MessageDigest.getInstance("SHA-256")
+        messageDigest.update(bytes, 0, bytes.size)
+        val digest = messageDigest.digest()
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
+    }
 }

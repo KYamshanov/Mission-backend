@@ -4,8 +4,11 @@ import io.ktor.util.logging.*
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import ru.kyamshanov.mission.authorization.AuthorizationRepository
 import ru.kyamshanov.mission.client.Client
 import ru.kyamshanov.mission.client.ClientStorage
+import ru.kyamshanov.mission.client.issuer.JwtSigner
+import ru.kyamshanov.mission.client.issuer.TokenIssuer
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.ResponseType
 import ru.kyamshanov.mission.client.models.Scope
@@ -18,7 +21,10 @@ import java.time.LocalDateTime
 class ClientStorageImpl(
     private val identificationServiceFactory: IdentificationServiceFactory,
     private val logger: Logger,
-    private val tokenCipher: SimpleCipher
+    private val tokenCipher: SimpleCipher,
+    private val jwtSigner: JwtSigner,
+    private val tokenIssuer: TokenIssuer,
+    private val authorizationRepository: AuthorizationRepository,
 ) : ClientStorage {
     override fun getAllClients(): List<Client> = transaction {
         ClientsTable.selectAll()
@@ -52,7 +58,10 @@ class ClientStorageImpl(
                     authenticationCodeLifeTimeInMs = it[ClientsTable.metadata].authenticationCodeLifeTimeInMs,
                     rawClientAuthenticationMethod = it[ClientsTable.clientAuthenticationMethods],
                     clientSecret = it[ClientsTable.metadata].secret,
-                    tokenCipher = tokenCipher
+                    tokenCipher = tokenCipher,
+                    jwtSigner = jwtSigner,
+                    tokenIssuer = tokenIssuer,
+                    authorizationRepository = authorizationRepository
                 )
             }
     }

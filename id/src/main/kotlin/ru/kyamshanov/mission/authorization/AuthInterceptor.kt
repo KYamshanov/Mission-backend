@@ -4,7 +4,10 @@ import io.ktor.server.application.*
 import io.ktor.util.pipeline.*
 import ru.kyamshanov.mission.client.models.SocialService
 
-interface Auth {
+/**
+ * Interface of intercept for ktor request to process OAuth authorization
+ */
+interface AuthInterceptor {
 
     suspend fun authorize(pipeline: PipelineContext<Unit, ApplicationCall>)
 

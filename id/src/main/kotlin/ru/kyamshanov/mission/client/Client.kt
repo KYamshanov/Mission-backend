@@ -1,7 +1,9 @@
 package ru.kyamshanov.mission.client
 
+import ru.kyamshanov.mission.client.models.JwtTokenPair
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.identification.IdentificationService
+import java.util.*
 
 interface Client {
 
@@ -30,4 +32,9 @@ interface Client {
     fun authorizedBy(service: SocialService): Result<AuthenticationGrantedDelegate>
 
     fun clientAuthorization(): Result<ClientAuthorizationDelegate>
+
+    /**
+     * create new access token for user with id [userId] and scope credentials [scopes]
+     */
+    fun generateJwtTokens(userId: UUID, scopes: String): JwtTokenPair
 }

@@ -4,10 +4,10 @@ import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import ru.kyamshanov.mission.authorization.Auth
+import ru.kyamshanov.mission.authorization.AuthInterceptor
 import ru.kyamshanov.mission.client.models.SocialService
 
-fun Application.authentication(httpClient: HttpClient, auth: Auth) = install(Authentication) {
+fun Application.authentication(httpClient: HttpClient, authInterceptor: AuthInterceptor) = install(Authentication) {
     oauth("auth-oauth-github") {
         urlProvider = { this@authentication.environment.config.property("oauth.github.urlProvider").getString() }
         providerLookup = {
@@ -19,7 +19,7 @@ fun Application.authentication(httpClient: HttpClient, auth: Auth) = install(Aut
                 clientId = this@authentication.environment.config.property("oauth.github.clientId").getString(),
                 clientSecret = this@authentication.environment.config.property("oauth.github.clientSecret").getString(),
                 defaultScopes = listOf("read:user"),
-                onStateCreated = { call, state -> auth.loginBy(SocialService.GITHUB, call) }
+                onStateCreated = { call, _ -> authInterceptor.loginBy(SocialService.GITHUB, call) }
             )
         }
         client = httpClient
