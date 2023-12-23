@@ -20,6 +20,7 @@ data class AuthorizationModel(
     val issuedAt: LocalDateTime,
     val userId: UUID?,
     val accessTokenIssuedAt: LocalDateTime?,
+    val enabled: Boolean
 ) {
     constructor(
         socialService: SocialService,
@@ -44,7 +45,8 @@ data class AuthorizationModel(
         issuedAt = issuedAt,
         userId = null,
         refreshTokenIssuedAt = null,
-        accessTokenIssuedAt = null
+        accessTokenIssuedAt = null,
+        enabled = false
     )
 
     data class Metadata(

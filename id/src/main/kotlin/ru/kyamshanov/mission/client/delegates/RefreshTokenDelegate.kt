@@ -10,6 +10,7 @@ import ru.kyamshanov.mission.authorization.UserRepository
 import ru.kyamshanov.mission.client.ClientFactory
 import ru.kyamshanov.mission.client.GetTokenDelegate
 import ru.kyamshanov.mission.dto.TokensRsDto
+import ru.kyamshanov.mission.security.SimpleCipher
 import java.time.LocalDateTime
 import java.util.*
 
@@ -20,13 +21,15 @@ class RefreshTokenDelegate(
     private val clientFactory: ClientFactory,
     private val formParameters: Parameters,
     private val authorizationRepository: AuthorizationRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val simpleCipher: SimpleCipher,
 ) : GetTokenDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
-            val refreshToken: String = requireNotNull(formParameters["refresh_token"])
+            val refreshToken: String = requireNotNull(formParameters["refresh_token"]).let { simpleCipher.decrypt(it) }
 
             val authorizationModel = authorizationRepository.findFirstByRefreshToken(refreshToken)
+            check(authorizationModel.enabled) { "Authorization has been disabled" }
 
             val clientId: String = authorizationModel.clientId
             val scopes: String = authorizationModel.scopes
@@ -37,8 +40,9 @@ class RefreshTokenDelegate(
             if (refreshTokenExpiresAt < LocalDateTime.now()) throw IllegalStateException("RefreshToken is expired")
 
             userRepository.findUserById(userId).also {
-                if (it.enabled.not()) throw IllegalStateException("User is disabled")
+                check(it.enabled) { "User is disabled" }
             }
+
             val client = clientFactory.create(clientId).getOrThrow()
                 .also { it.clientAuthorization().getOrThrow().execute(pipeline, httpClient) }
 
@@ -64,7 +68,7 @@ class RefreshTokenDelegate(
 
             val response = TokensRsDto(
                 accessToken = newAccessToken,
-                refreshToken = newRefreshToken,
+                refreshToken = newRefreshToken?.let { simpleCipher.encrypt(it) },
                 scope = scopes,
                 tokenType = "Bearer",
                 expiresIn = client.accessTokenLifetimeInMS / 1000

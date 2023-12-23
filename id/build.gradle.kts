@@ -43,6 +43,7 @@ dependencies {
     implementation("io.ktor:ktor-server-sessions")
     implementation("io.ktor:ktor-server-double-receive")
     implementation("io.ktor:ktor-network-tls-certificates")
+    implementation("io.ktor:ktor-server-status-pages")
 
     //logs
     implementation("ch.qos.logback:logback-classic:$logbackVersion")

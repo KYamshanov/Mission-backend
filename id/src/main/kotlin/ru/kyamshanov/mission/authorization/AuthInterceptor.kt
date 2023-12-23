@@ -16,4 +16,6 @@ interface AuthInterceptor {
     suspend fun loginBy(service: SocialService, call: ApplicationCall)
 
     suspend fun authorizedBy(service: SocialService, pipeline: PipelineContext<Unit, ApplicationCall>)
+
+    suspend fun logout(pipeline: PipelineContext<Unit, ApplicationCall>)
 }

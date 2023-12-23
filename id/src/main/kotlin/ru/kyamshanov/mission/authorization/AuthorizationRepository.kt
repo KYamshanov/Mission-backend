@@ -12,4 +12,8 @@ interface AuthorizationRepository {
     suspend fun updateAuthData(authorization: AuthorizationModel)
 
     suspend fun updateTokens(authorization: AuthorizationModel)
+
+    suspend fun findFirstByAccessToken(accessToken: String): AuthorizationModel
+
+    suspend fun disableAuthorizationByRefreshToken(refreshToken: String)
 }

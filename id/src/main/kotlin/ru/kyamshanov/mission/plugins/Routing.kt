@@ -86,6 +86,10 @@ fun Application.configureRouting(httpClient: HttpClient, authInterceptor: AuthIn
             authInterceptor.token(this)
         }
 
+        delete("/oauth2/token") {
+            authInterceptor.logout(this)
+        }
+
 
         authenticate("auth-oauth-github") {
 

@@ -56,7 +56,8 @@ class TokenByAuthorizationCodeDelegate(
                         accessToken = accessToken,
                         refreshToken = refreshToken,
                         refreshTokenExpiresAt = refreshTokenExpiresAt,
-                        refreshTokenIssuedAt = LocalDateTime.now()
+                        refreshTokenIssuedAt = LocalDateTime.now(),
+                        enabled = true
                     )
                 }
                 .let {
@@ -65,7 +66,7 @@ class TokenByAuthorizationCodeDelegate(
                     authorizationRepository.updateAuthData(it)
                     TokensRsDto(
                         accessToken = it.accessToken,
-                        refreshToken = it.refreshToken,
+                        refreshToken = it.refreshToken?.let { token -> tokenCipher.encrypt(token) },
                         scope = scopes,
                         tokenType = "Bearer",
                         expiresIn = client.accessTokenLifetimeInMS / 1000

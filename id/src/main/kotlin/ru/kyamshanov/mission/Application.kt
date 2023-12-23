@@ -65,15 +65,20 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     val authorizationRepository = AuthorizationDatabaseRepository()
     val userRepository = UserDatabaseRepository()
 
+    val clientId = this.environment.config.property("oauth.github.clientId").getString()
+    val clientSecret = this.environment.config.property("oauth.github.clientSecret").getString()
+
+    val identificationServiceFactory = IdentificationServiceFactoryImpl(
+        githubIdentification = GithubIdentification(
+            httpClient = httpClient,
+            userRepository = userRepository,
+            clientId, clientSecret
+        )
+    )
     val auth = AuthInterceptorImpl(
         clientFactory = ClientFactoryImpl(
             clientStorage = ClientStorageImpl(
-                identificationServiceFactory = IdentificationServiceFactoryImpl(
-                    githubIdentification = GithubIdentification(
-                        httpClient = httpClient,
-                        userRepository = userRepository
-                    )
-                ),
+                identificationServiceFactory = identificationServiceFactory,
                 logger = log,
                 tokenCipher = tokenCipher,
                 jwtSigner = jwtSigner,
@@ -84,8 +89,10 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
         httpClient = httpClient,
         tokenCipher = tokenCipher,
         authorizationRepository = authorizationRepository,
-        userRepository = userRepository
+        userRepository = userRepository,
+        identificationServiceFactory = identificationServiceFactory
     )
     authentication(httpClient, auth)
     configureRouting(httpClient, auth)
+    exceptionHandler()
 }

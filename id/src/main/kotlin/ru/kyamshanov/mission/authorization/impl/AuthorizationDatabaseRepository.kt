@@ -53,6 +53,7 @@ class AuthorizationDatabaseRepository : AuthorizationRepository {
         transaction {
             AuthorizationTable.update({ AuthorizationTable.id eq authorization.authorizationId }) {
                 it[userId] = authorization.userId
+                it[enabled] = authorization.enabled
                 it.putTokens(authorization)
             }.also {
                 check(it == 1) { "There is was updated not one entity in the database at refreshing. [$it]" }
@@ -66,6 +67,25 @@ class AuthorizationDatabaseRepository : AuthorizationRepository {
                 it.putTokens(authorization)
             }.also {
                 check(it == 1) { "There is was updated not one entity in the database at refreshing. [$it]" }
+            }
+        }
+    }
+
+    override suspend fun findFirstByAccessToken(accessToken: String): AuthorizationModel =
+        withContext(Dispatchers.IO) {
+            transaction {
+                AuthorizationTable.select {
+                    AuthorizationTable.accessTokenValue eq accessToken
+                }.limit(1).single()
+            }.obtainAuthorizationModel()
+        }
+
+    override suspend fun disableAuthorizationByRefreshToken(refreshToken: String): Unit = withContext(Dispatchers.IO) {
+        transaction {
+            AuthorizationTable.update({ AuthorizationTable.refreshTokenValue eq refreshToken }) {
+                it[enabled] = false
+            }.also {
+                check(it == 1) { "Was updated more or less then one entity in the database at disabling. [$it]" }
             }
         }
     }
@@ -115,7 +135,8 @@ class AuthorizationDatabaseRepository : AuthorizationRepository {
         issuedAt = get(AuthorizationTable.issuedAt),
         userId = get(AuthorizationTable.userId),
         refreshTokenIssuedAt = get(AuthorizationTable.refreshTokenIssuedAt),
-        accessTokenIssuedAt = get(AuthorizationTable.accessTokenIssuedAt)
+        accessTokenIssuedAt = get(AuthorizationTable.accessTokenIssuedAt),
+        enabled = get(AuthorizationTable.enabled),
     )
 
 }

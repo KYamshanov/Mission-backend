@@ -16,6 +16,8 @@ import ru.kyamshanov.mission.client.delegates.TokenByAuthorizationCodeDelegate
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
+import ru.kyamshanov.mission.exception.verify
+import ru.kyamshanov.mission.identification.IdentificationServiceFactory
 import ru.kyamshanov.mission.security.SimpleCipher
 
 class AuthInterceptorImpl(
@@ -24,6 +26,7 @@ class AuthInterceptorImpl(
     private val tokenCipher: SimpleCipher,
     private val authorizationRepository: AuthorizationRepository,
     private val userRepository: UserRepository,
+    private val identificationServiceFactory: IdentificationServiceFactory,
 ) : AuthInterceptor {
 
     override suspend fun authorize(pipeline: PipelineContext<Unit, ApplicationCall>) {
@@ -59,7 +62,8 @@ class AuthInterceptorImpl(
                     clientFactory = clientFactory,
                     formParameters = formParameters,
                     authorizationRepository = authorizationRepository,
-                    userRepository = userRepository
+                    userRepository = userRepository,
+                    simpleCipher = tokenCipher,
                 )
             }
 
@@ -74,7 +78,7 @@ class AuthInterceptorImpl(
         val formParameters = call.receiveParameters()
         val csrfToken = requireNotNull(formParameters["_csrf"].toString())
         val sessionConfig = requireNotNull(call.sessions.get<OAuthSessionConfig>())
-        if (csrfToken != sessionConfig.csrfToken) throw IllegalStateException("Csrf is not valid")
+        verify(csrfToken == sessionConfig.csrfToken) { HttpStatusCode.Forbidden to "Csrf is not valid" }
     }
 
     override suspend fun authorizedBy(service: SocialService, pipeline: PipelineContext<Unit, ApplicationCall>) {
@@ -86,5 +90,22 @@ class AuthInterceptorImpl(
             it.printStackTrace()
             pipeline.call.respond(HttpStatusCode.InternalServerError)
         }
+    }
+
+    override suspend fun logout(pipeline: PipelineContext<Unit, ApplicationCall>) {
+        val authorizationHeader = pipeline.call.request.header(HttpHeaders.Authorization)
+        checkNotNull(authorizationHeader)
+        check(authorizationHeader.startsWith("Bearer "))
+        val accessToken = authorizationHeader.removePrefix("Bearer ")
+        val authorization = authorizationRepository.runCatching { findFirstByAccessToken(accessToken) }.getOrNull()
+        checkNotNull(authorization) { "Authorization has not been found with authorization $authorizationHeader" }
+        verify(authorization.enabled) { HttpStatusCode.Unauthorized to "Authorization has been disabled" }
+        checkNotNull(authorization.socialService) { "Authorization has no social service" }
+        checkNotNull(authorization.metadata) { "Authorization metadata did not establish" }
+        checkNotNull(authorization.refreshToken) { "Refresh token has not establish" }
+        identificationServiceFactory.create(authorization.socialService)
+            .revoke(authorization.metadata.encryptedToken.let { tokenCipher.decrypt(it) })
+        authorizationRepository.disableAuthorizationByRefreshToken(authorization.refreshToken)
+        pipeline.call.respond(HttpStatusCode.NoContent)
     }
 }

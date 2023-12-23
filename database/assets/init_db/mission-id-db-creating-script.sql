@@ -61,7 +61,7 @@ CREATE TABLE "mission-id".authorization
     user_id                        UUID                        NULL REFERENCES "mission-id".users (id),
     issued_at                      TIMESTAMP                   NOT NULL,
     authorization_grant_type       VARCHAR(200)                NULL,
-    authorization_metadata         JSON                        NULL DEFAULT NULL,
+    authorization_metadata         JSON                        NULL     DEFAULT NULL,
     authentication_code            VARCHAR(128)                NOT NULL,
     authentication_code_expires_at TIMESTAMP                   NOT NULL,
     user_metadata                  JSON                        NULL,
@@ -72,7 +72,8 @@ CREATE TABLE "mission-id".authorization
     refresh_token_value            VARCHAR(4000)               NULL,
     refresh_token_issued_at        TIMESTAMP                   NULL,
     refresh_token_expires_at       TIMESTAMP                   NULL,
-    social_service                 "mission-id".social_service NULL
+    social_service                 "mission-id".social_service NULL,
+    enabled                        BOOLEAN                     NOT NULL DEFAULT FALSE
 );
 
 

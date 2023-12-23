@@ -1,0 +1,30 @@
+ktor:
+  deployment:
+    port: 8080
+    sslPort: 4443
+  security:
+    ssl:
+      keyStore: "/GeneratorSslKeys/build/certs/keystore.jks"
+      keyAlias: "idsign"
+      keyStorePassword: "123456"
+      privateKeyPassword: "local-idsign-password-HjkrP"
+  application:
+    modules:
+      - ru.kyamshanov.mission.ApplicationKt.module
+oauth:
+  issuer: "http://auth"
+  security:
+    cipher:
+      keyAlias: "token-sign"
+      keyPassword: "local-idsign-password-HjkrP"
+      keyStore: "GeneratorSslKeys/build/certs/tokenkeystore.jks"
+      keyStorePassword: ""123456""
+  github:
+    urlProvider: $githubUrlProvider
+    clientId: $clientId
+    clientSecret: $clientSecret
+database:
+  postgresql:
+    url: $postgresql_url
+    user: $postgresql_user
+    password: $postgresql_password

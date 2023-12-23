@@ -44,6 +44,7 @@ object AuthorizationTable : UUIDTable(name = "mission-id.authorization") {
     val refreshTokenIssuedAt = datetime("refresh_token_issued_at").nullable()
     val refreshTokenExpiresAt = datetime("refresh_token_expires_at").nullable()
     val socialService = socialServiceEnumeration("social_service").nullable()
+    val enabled = bool("enabled")
 }
 
 @Serializable
