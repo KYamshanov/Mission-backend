@@ -1,81 +1,90 @@
-version: '1.0'
+version: '3.8'
 
 services:
   auth:
     build: ../id
     container_name: 'auth'
-    networks:
-      - auth-server
-      - database_postgres
-      - gateway
     volumes:
-      - ./../id/GeneratorSslKeys/build/certs/:/certs
+      - ${certs}/:/certs
     ports:
-      - 6543:443
+      - "6543:443"
     environment:
       SERVER_PORT: 80
       clientId: ${clientId}
       clientSecret: ${clientSecret}
-      postgresql_url: 'jdbc:postgresql://postgres:5432/postgres'
+      postgresql_url: ${postgresql_url_jdbc}
       keyStore: '/certs/keystore.jks'
-      keyAlias: ${keyAlias}
-      keyStorePassword: ${keyStorePassword}
-      privateKeyPassword: ${privateKeyPassword}
+      keyAlias: ${sslKeyAlias}
+      keyStorePassword: ${sslKeyStorePassword}
+      privateKeyPassword: ${sslPrivateKeyPassword}
       tokenKeyStore: '/certs/tokenkeystore.jks'
       tokenKeyAlias: ${tokenKeyAlias}
-      tokenKeyStorePassword: ${keyStorePassword}
+      tokenKeyStorePassword: ${tokenKeyStorePassword}
       tokenKeyPassword: ${tokenKeyPassword}
       SSL_PORT: 443
       githubUrlProvider: ${githubUrlProvider}
       postgresql_user: ${postgresql_user}
       postgresql_password: ${postgresql_password}
+    networks:
+      - database
+      - gateway
   gateway:
     build: ../gateway
     container_name: 'gateway'
     ports:
-      - 3456:443
-    networks:
-      - gateway
-      - auth-server
+      - "3456:443"
     volumes:
-      - ./../id/GeneratorSslKeys/build/certs/:/certs
+      - ${certs}/:/certs
     environment:
       SERVER_PORT: 443
       keyStore: '/certs/keystore.jks'
-      keyAlias: ${keyAlias}
-      keyStorePassword: ${keyStorePassword}
-      privateKeyPassword: ${privateKeyPassword}
+      keyAlias: ${sslKeyAlias}
+      keyStorePassword: ${sslKeyStorePassword}
+      privateKeyPassword: ${sslPrivateKeyPassword}
       SSL_PORT: 443
+    networks:
+      - gateway
   point:
     build: ../point
     container_name: 'point'
-    networks:
-      - database_postgres
-      - backend
-      - gateway
     environment:
       SERVER_PORT: 80
-      postgresql_url_r2dbc: 'r2dbc:postgresql://postgres:5432/postgres'
+      postgresql_url_r2dbc: ${postgresql_url_r2dbc}
       postgresql_user: ${postgresql_user}
       postgresql_password: ${postgresql_password}
+      postgresql_db: ${postgresql_db}
+    networks:
+      - database
+      - gateway
+  postgres:
+    image: postgres:14
+    container_name: 'postgres'
+    environment:
+      POSTGRES_DB: ${postgresql_db}
+      POSTGRES_USER: ${postgresql_user}
+      POSTGRES_PASSWORD: ${postgresql_password}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ${assets}/init_db:/docker-entrypoint-initdb.d
+      - ${assets}/db_data/postgres:/var/lib/postgresql/data
     ports:
-      - 8081:80
+      - "127.0.0.1:5431:5432"
+    networks:
+      - database
+  mongo:
+    image: mongo:6.0.3
+    container_name: 'mongodb'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: mission_db
+    volumes:
+      - ${assets}/db_data/mongo/db:/data/db
+      - ${assets}/db_data/mongo/configdb:/data/configdb
+    ports:
+      - "127.0.0.1:27017:27017"
 networks:
-  database_postgres:
-    name: database_postgres
-    external: true
-  database_mongo:
-    name: database_mongo
-    external: true
+  database:
+    driver: bridge
   gateway:
     driver: bridge
-    name: gateway
-  backend:
-    driver: bridge
-    name: backend
-  auth-server:
-    driver: bridge
-    name: auth-server
-  hostnet:
-    external:
-      name: host

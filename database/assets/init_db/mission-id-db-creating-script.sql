@@ -1,6 +1,7 @@
 /**
   Скрипт для создания таблиц users, authorization
  */
+CREATE SCHEMA IF NOT EXISTS "mission-id";
 DROP TABLE IF EXISTS "mission-id".users CASCADE;
 DROP TABLE IF EXISTS "mission-id".authorities CASCADE;
 DROP TABLE IF EXISTS "mission-id".authorization CASCADE;

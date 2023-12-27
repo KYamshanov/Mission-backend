@@ -2,3 +2,6 @@
 /assets/db_data/mongo/*
 .idea
 .fleet
+/.idea
+.env
+*.jks
