@@ -114,7 +114,7 @@ data class ClientImpl(
             .audience().add(clientId)
             .and()
             .claim("scope", scopes)
-            .claim("exp", Timestamp.valueOf(accessTokenExpiresAt).time)
+            .expiration(Timestamp.valueOf(accessTokenExpiresAt))
             .let { jwtSigner.sign(it) }
         return accessToken
     }
