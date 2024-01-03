@@ -94,5 +94,6 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     )
     authentication(httpClient, auth)
     configureRouting(httpClient, auth)
+    configureResourcesRouting()
     exceptionHandler()
 }

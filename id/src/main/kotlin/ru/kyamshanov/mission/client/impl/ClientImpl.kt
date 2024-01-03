@@ -36,7 +36,8 @@ data class ClientImpl(
     private val tokenCipher: SimpleCipher,
     private val jwtSigner: JwtSigner,
     private val tokenIssuer: TokenIssuer,
-    private val authorizationRepository: AuthorizationRepository
+    private val authorizationRepository: AuthorizationRepository,
+    private val authenticationMethods: Set<AuthenticationMethod>
 ) : Client {
 
     override val identificationServices = socialServices.associateWith { identificationServiceFactory.create(it) }
@@ -59,7 +60,8 @@ data class ClientImpl(
                     scope = scope,
                     clientRedirectUrl = redirectUrl,
                     state = state,
-                    csrfToken = tokenIssuer.generateToken()
+                    csrfToken = tokenIssuer.generateToken(),
+                    authenticationMethods = authenticationMethods
                 )
 
                 ResponseType.TOKEN -> TODO("Authorization by token is not supported now")

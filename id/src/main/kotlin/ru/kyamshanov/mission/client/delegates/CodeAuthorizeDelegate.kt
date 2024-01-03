@@ -7,6 +7,7 @@ import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import ru.kyamshanov.mission.client.AuthorizeDelegate
+import ru.kyamshanov.mission.client.models.AuthenticationMethod
 import ru.kyamshanov.mission.dto.OAuthSessionConfig
 import java.net.URI
 
@@ -15,7 +16,8 @@ class CodeAuthorizeDelegate(
     private val scope: String,
     private val clientRedirectUrl: String,
     private val state: String,
-    private val csrfToken: String
+    private val csrfToken: String,
+    private val authenticationMethods: Set<AuthenticationMethod>
 ) : AuthorizeDelegate {
     override suspend fun execute(pipeline: PipelineContext<Unit, ApplicationCall>, httpClient: HttpClient) =
         pipeline.run {
@@ -24,7 +26,7 @@ class CodeAuthorizeDelegate(
                 clientRedirectUrl.replaceFirst(":*/", ":${redirectUri.port}/")
             } else clientRedirectUrl
 
-            check(callbackUrl == redirectUri.toString()){ "Redirect uri has not been matched with the valid value in database" }
+            check(callbackUrl == redirectUri.toString()) { "Redirect uri has not been matched with the valid value in database" }
 
             call.sessions.set(
                 OAuthSessionConfig(
@@ -36,6 +38,17 @@ class CodeAuthorizeDelegate(
                     csrfToken
                 )
             )
-            call.respond(FreeMarkerContent("login.ftl", mapOf("csrf_token" to csrfToken)))
+            val isLoginFormVisible = authenticationMethods.contains(AuthenticationMethod.LOGIN_FORM)
+            val isSocialServicesVisible = authenticationMethods.contains(AuthenticationMethod.SOCIAL_SERVICES)
+            call.respond(
+                FreeMarkerContent(
+                    "login.ftl",
+                    mapOf(
+                        "csrf_token" to csrfToken,
+                        "form_visible" to isLoginFormVisible,
+                        "social_services_visible" to isSocialServicesVisible
+                    )
+                )
+            )
         }
 }

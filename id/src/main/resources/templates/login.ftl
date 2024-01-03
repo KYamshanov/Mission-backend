@@ -1,36 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <title>Please sign in</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous"/>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="css/style.css"/>
+    <title>Mission ID</title>
 </head>
-<body>
-<div class="container">
-    <form class="form-signin" method="post" action="/login">
-        <h2 class="form-signin-heading">Please sign in</h2>
-        <p>
-            <label for="username" class="sr-only">Username</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required
-                   autofocus>
-        </p>
-        <p>
-            <label for="password" class="sr-only">Password</label>
-            <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
-        </p>
-        <input name="_csrf" type="hidden" value="${csrf_token}"/>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-    </form>
+<body class="body">
+<div class="main-container">
+    <div class="wrapper">
+        <div class="pic" style="background-image: url(images/app-icon.svg);"></div>
+        <span class="text">Mission ID</span></div>
 
-    <form class="form-signin" method="post" action="/auth/github">
-        <input name="_csrf" type="hidden" value="${csrf_token}"/>
-        <button type="submit">Sign in by github</button>
-    </form>
+    <#if form_visible>
+        <form method="post" action="/login">
+
+            <div class="wrapper-2">
+                <div class="section"><span class="text-2">Логин</span><span
+                            class="text-3">mail@gmail.ru</span></div>
+                <div class="group"><span class="text-4">Пароль</span><span
+                            class="text-5">*********</span></div>
+                <input name="_csrf" type="hidden" value="${csrf_token}"/>
+
+                <div class="section-2">
+                    <div class="group-2">
+                        <div class="group-3">
+                            <label class="text-6">
+                                <button class="text-wrapper-4" type="submit">Войти</button>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </#if>
+    <#if social_services_visible>
+        <div class="section-3">
+            <div class="section-4"><span class="text-7"
+                                         data-node-id="509:67__6">Sing-in</span><span
+                        class="text-8" data-node-id="509:67__0"> </span><span class="text-9" data-node-id="509:67__7">by social service</span>
+            </div>
+            <form method="post" action="/auth/github">
+                <input name="_csrf" type="hidden" value="${csrf_token}"/>
+
+                <input type="image" class="img" src="images/github-logo.svg" alt="github"/>
+                <span class="text-a">GitHub</span>
+            </form>
+        </div>
+    </#if>
 </div>
 </body>
 </html>

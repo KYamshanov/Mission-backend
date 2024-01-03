@@ -45,14 +45,15 @@ CREATE TABLE "mission-id".clients
     id                            VARCHAR(20) PRIMARY KEY,
     redirect_url                  VARCHAR(200),
     scopes                        VARCHAR(1000) NOT NULL,
-    issued_at                     TIMESTAMP DEFAULT (now()),
+    issued_at                     TIMESTAMP              DEFAULT (now()),
     enabled                       BOOLEAN       NOT NULL,
     client_authentication_methods VARCHAR(200)  NOT NULL,
     grand_types                   VARCHAR(1000) NOT NULL,
     response_types                VARCHAR(1000) NOT NULL,
-    expires_at                    TIMESTAMP DEFAULT NULL,
+    expires_at                    TIMESTAMP              DEFAULT NULL,
     logout_redirect_url           VARCHAR(200),
-    metadata                      JSON      DEFAULT NULL
+    metadata                      JSON                   DEFAULT NULL,
+    authentication_methods        VARCHAR(1000) NOT NULL DEFAULT ('SOCIAL_SERVICES,LOGIN_FORM')
 );
 
 CREATE TABLE "mission-id".authorization

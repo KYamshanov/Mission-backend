@@ -37,12 +37,13 @@ object ClientsTable : IdTable<String>(name = "mission-id.clients") {
     val response_types = varchar("response_types", 1000)
     val expiresAt = datetime("expires_at")
     val logoutRedirectUrl = varchar("logout_redirect_url", 200)
-    val metadata = json<ClientMetadata,>("metadata", Json { prettyPrint = true })
+    val metadata = json<ClientMetadata>("metadata", Json { prettyPrint = true })
+    val authenticationMethods = varchar("authentication_methods", 1000)
 }
 
 @Serializable
 data class ClientMetadata(
-    val accessTokenLifetimeInMS: Long ,
+    val accessTokenLifetimeInMS: Long,
     val refreshTokenLifetimeInMS: Long,
     val authenticationCodeLifeTimeInMs: Long,
     val secret: String

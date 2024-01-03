@@ -56,33 +56,6 @@ services:
     networks:
       - database
       - gateway
-  postgres:
-    image: postgres:14
-    container_name: 'postgres'
-    environment:
-      POSTGRES_DB: ${postgresql_db}
-      POSTGRES_USER: ${postgresql_user}
-      POSTGRES_PASSWORD: ${postgresql_password}
-      PGDATA: "/var/lib/postgresql/data/pgdata"
-    volumes:
-      - ${assets}/init_db:/docker-entrypoint-initdb.d
-      - ${assets}/db_data/postgres:/var/lib/postgresql/data
-    ports:
-      - "127.0.0.1:5431:5432"
-    networks:
-      - database
-  mongo:
-    image: mongo:6.0.3
-    container_name: 'mongodb'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: mission_db
-    volumes:
-      - ${assets}/db_data/mongo/db:/data/db
-      - ${assets}/db_data/mongo/configdb:/data/configdb
-    ports:
-      - "127.0.0.1:27017:27017"
 networks:
   database:
     driver: bridge

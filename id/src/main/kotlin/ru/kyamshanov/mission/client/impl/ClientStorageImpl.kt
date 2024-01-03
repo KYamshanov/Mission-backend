@@ -9,6 +9,7 @@ import ru.kyamshanov.mission.client.Client
 import ru.kyamshanov.mission.client.ClientStorage
 import ru.kyamshanov.mission.client.issuer.JwtSigner
 import ru.kyamshanov.mission.client.issuer.TokenIssuer
+import ru.kyamshanov.mission.client.models.AuthenticationMethod
 import ru.kyamshanov.mission.client.models.AuthorizationGrantTypes
 import ru.kyamshanov.mission.client.models.ResponseType
 import ru.kyamshanov.mission.client.models.Scope
@@ -61,7 +62,9 @@ class ClientStorageImpl(
                     tokenCipher = tokenCipher,
                     jwtSigner = jwtSigner,
                     tokenIssuer = tokenIssuer,
-                    authorizationRepository = authorizationRepository
+                    authorizationRepository = authorizationRepository,
+                    authenticationMethods = it[ClientsTable.authenticationMethods].split(",")
+                        .map { str -> AuthenticationMethod.entries.first { method -> method.name == str } }.toSet(),
                 )
             }
     }
