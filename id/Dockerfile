@@ -6,7 +6,7 @@ RUN gradle shadowJar
 
 # Package stage
 
-FROM openjdk:17
+FROM eclipse-temurin:21-jre-alpine
 ENV JAR_NAME=id-all.jar
 ENV APP_HOME=/app
 COPY --from=GRADLE /home/gradle/build/libs/$JAR_NAME $APP_HOME/
