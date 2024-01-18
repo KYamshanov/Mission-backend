@@ -1,5 +1,15 @@
+#Build stage
+
+FROM gradle:8.5.0-jdk17-alpine AS GRADLE
+WORKDIR /usr/id/
+COPY . .
+RUN gradle shadowJar
+
+# Package stage
+
 FROM openjdk:17
-WORKDIR /app/
-ADD /build/libs/id-all.jar application.jar
-EXPOSE 80
-ENTRYPOINT ["java","-jar","application.jar","--debug"]
+ENV JAR_NAME=id-all.jar
+ENV APP_HOME=/usr/id
+WORKDIR $APP_HOME
+COPY --from=GRADLE $APP_HOME/build/libs/$JAR_NAME .
+ENTRYPOINT exec java -jar $JAR_NAME --debug
