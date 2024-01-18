@@ -6,7 +6,7 @@ on:
 
 jobs:
   push_to_registry:
-    if: ${{ concontains(github.event.release.name, '-id') || concontains(github.ref_name, '-id') }}
+    if: ${{ contains(github.event.release.name, '-id') || contains(github.ref_name, '-id') }}
     name: Push ID Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
