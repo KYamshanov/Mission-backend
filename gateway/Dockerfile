@@ -6,7 +6,7 @@ RUN gradle build
 
 # Package stage
 
-FROM openjdk:17
+FROM eclipse-temurin:21-jre-alpine
 ENV JAR_NAME=gateway-0.0.1-SNAPSHOT.jar
 ENV APP_HOME=/gateway
 COPY --from=GRADLE /home/gradle/build/libs/$JAR_NAME $APP_HOME/
