@@ -23,5 +23,5 @@ fi
 assets="./assets"
 mkdir ./deploy
 curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/database/docker-compose.yml --output ./deploy/docker-compose.yml
-docker compose up --abort-on-container-exit
+docker compose up --abort-on-container-exit --detach
 rm -r ./deploy
