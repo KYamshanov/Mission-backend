@@ -20,8 +20,9 @@ if [ ! -f postgres_password.txt ]; then
     exit
 fi
 
-assets="./assets"
 mkdir ./deploy
+export assets="./assets"
 curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/database/docker-compose.yml --output ./deploy/docker-compose.yml
-docker compose up --abort-on-container-exit --detach
+docker compose up --detach
+unset assets
 rm -r ./deploy
