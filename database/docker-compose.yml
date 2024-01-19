@@ -18,6 +18,7 @@ services:
       - postgres
     restart: always
     secrets:
+      - postgres_db
       - postgres_user
       - postgres_password
 
