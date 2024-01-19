@@ -20,9 +20,14 @@ if [ ! -f postgres_password.txt ]; then
     exit
 fi
 
-mkdir ./deploy
-export assets="./assets"
-curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/database/docker-compose.yml --output ./deploy/docker-compose.yml
+mkdir ./database
+export assets="../assets"
+curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/database/docker-compose.yml --output ./database/docker-compose.yml
+cp postgres_db.txt ./database/postgres_db.txt
+cp postgres_user.txt ./database/postgres_user.txt
+cp postgres_password.txt ./database/postgres_password.txt
+cd ./database
 docker compose up --detach
+cd ..
 unset assets
-rm -r ./deploy
+rm -r ./database
