@@ -1,39 +1,37 @@
-#Docker-compose файл для создания контейнера с Бд. Для mission
-
-version: '1.0'
+version: '3.9'
 
 services:
   postgres:
     image: postgres:14
     container_name: 'postgres'
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: private_password
+      POSTGRES_DB_FILE: /run/secrets/postgres_db
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
-        - ./assets/init_db:/docker-entrypoint-initdb.d
-        - ./assets/db_data/postgres:/var/lib/postgresql/data
-    networks:
-        - postgres
+      - ${assets}/init_db:/docker-entrypoint-initdb.d
+      - ${assets}/db_data/postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
-  mongo:
-      image: mongo:6.0.3
-      container_name: 'mongodb'
-      environment:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: password
-          MONGO_INITDB_DATABASE: mission_db
-      volumes:
-          - ./assets/db_data/mongo/db:/data/db
-          - ./assets/db_data/mongo/configdb:/data/configdb
-      networks:
-          - mongo
-      ports:
-        - 27017:27017
+      - "127.0.0.1:5431:5432"
+    networks:
+      - postgres
+    restart: always
+    secrets:
+      - postgres_user
+      - postgres_password
+
 networks:
-    postgres:
-        driver: bridge
-    mongo:
-        driver: bridge
+  postgres:
+    driver: overlay
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
+    attachable: true
+
+secrets:
+  postgres_db:
+    file: postgres_db.txt
+  postgres_user:
+    file: postgres_user.txt
+  postgres_password:
+    file: postgres_password.txt
