@@ -11,4 +11,5 @@ ENV JAR_NAME=point-0.0.1-SNAPSHOT.jar
 ENV APP_HOME=/point
 COPY --from=GRADLE /home/gradle/build/libs/$JAR_NAME $APP_HOME/
 WORKDIR $APP_HOME
-ENTRYPOINT exec java -jar ${JAR_NAME} --debug
+EXPOSE 80
+ENTRYPOINT exec java -jar ${JAR_NAME}
