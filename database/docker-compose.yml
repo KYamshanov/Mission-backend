@@ -24,8 +24,7 @@ services:
 
 networks:
   postgres:
-    driver: overlay
-    attachable: true
+    driver: bridge
 
 secrets:
   postgres_db:

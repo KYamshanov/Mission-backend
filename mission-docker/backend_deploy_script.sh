@@ -6,10 +6,10 @@ if [ ! -d ./secrets ]; then
 fi
 
 mkdir ./backend
-curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/mission-docker/docker-stack.yml --output ./backend/docker-stack.yml
+curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/mission-docker/docker-compose.yml --output ./backend/docker-compose.yml
 mkdir ./backend/secrets
 cp -r ./secrets ./backend/
 cd ./backend
-docker stack deploy -c ./docker-stack.yml backend
+docker compose up --detach
 cd ..
 rm -r ./backend
