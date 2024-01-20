@@ -56,38 +56,38 @@ networks:
 
 secrets:
   cipher_keyAlias:
-    file: /secrets/cipher_keyAlias
+    file: ./secrets/cipher_keyAlias
   cipher_keyPassword:
-    file: /secrets/cipher_keyPassword
+    file: ./secrets/cipher_keyPassword
   cipher_keyStorePassword:
-    file: /secrets/cipher_keyStorePassword
+    file: ./secrets/cipher_keyStorePassword
   github_clientId:
-    file: /secrets/github_clientId
+    file: ./secrets/github_clientId
   github_clientSecret:
-    file: /secrets/github_clientSecret
+    file: ./secrets/github_clientSecret
   github_urlProvider:
-    file: /secrets/github_urlProvider
+    file: ./secrets/github_urlProvider
   cipher_keyStore:
-    file: /secrets/cipher_keyStore
+    file: ./secrets/cipher_keyStore
   ssl_keyStore:
-    file: /secrets/ssl_keyStore
+    file: ./secrets/ssl_keyStore
   ssl_keyPassword:
-    file: /secrets/ssk_keyPassword
+    file: ./secrets/ssk_keyPassword
   ssl_keyStorePassword:
-    file: /secrets/ssk_keyStorePassword
+    file: ./secrets/ssk_keyStorePassword
   ssl_keyAlias:
-    file: /secrets/ssl_keyAlias
+    file: ./secrets/ssl_keyAlias
   postgresql_password:
-    file: /secrets/postgres_password
+    file: ./secrets/postgres_password
   postgresql_db:
-    file: /secrets/postgres_db
+    file: ./secrets/postgres_db
   postgresql_url:
-    file: /secrets/postgres_url
+    file: ./secrets/postgres_url
   postgresql_url_r2dbc:
-    file: /secrets/postgres_url_r2dbc
+    file: ./secrets/postgres_url_r2dbc
   postgresql_user:
-    file: /secrets/postgres_user
+    file: ./secrets/postgres_user
   keystore_jks:
-    file: /secrets/keystore.jks
+    file: ./secrets/keystore.jks
   tokenkeystore_jks:
-    file: /secrets/tokenkeystore.jks
+    file: ./secrets/tokenkeystore.jks
