@@ -35,8 +35,8 @@ private const val SSL_KEY_STORE_PASSWORD = "ktor.security.ssl.keyStorePassword"
 private const val SSL_PRIVATE_KEY_PASSWORD = "ktor.security.ssl.privateKeyPassword"
 
 fun sslSecretsProperies(): List<String> = buildList {
-    secrets["ssl_keyStore"]?.let { add("-P:$SSL_KEY_STORE=$it") }
-    secrets["ssl_keyAlias"]?.let { add("-P:$SSL_KEY_ALIAS=$it") }
-    secrets["ssl_keyStorePassword"]?.let { add("-P:$SSL_KEY_STORE_PASSWORD=$it") }
-    secrets["ssl_keyPassword"]?.let { add("-P:$SSL_PRIVATE_KEY_PASSWORD=$it") }
+    secrets["ssl_keyStore"]?.value?.let { add("-P:$SSL_KEY_STORE=$it") }
+    secrets["ssl_keyAlias"]?.value?.let { add("-P:$SSL_KEY_ALIAS=$it") }
+    secrets["ssl_keyStorePassword"]?.value?.let { add("-P:$SSL_KEY_STORE_PASSWORD=$it") }
+    secrets["ssl_keyPassword"]?.value?.let { add("-P:$SSL_PRIVATE_KEY_PASSWORD=$it") }
 }
