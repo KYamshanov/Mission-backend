@@ -14,9 +14,8 @@ private val secrets: Map<String, String> =
         .filter { item -> Files.isRegularFile(item) }
         .filter { item -> item.extension.isEmpty() }
         .map { item ->
-            val variableName = item.name
+            val variableName = item.name.also { println("Adding $it secret") }
             val fileValue = item.readLines().joinToString("\n")
-            println("Adding $variableName secret")
             variableName to fileValue
         }.collect(Collectors.toMap({ key -> key.first }, { value -> value.second }))
 
