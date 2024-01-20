@@ -6,7 +6,7 @@ if [ ! -d ./secrets ]; then
 fi
 
 mkdir ./backend
-curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/mission-id/docker-stack.yml --output ./backend/docker-stack.yml
+curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/mission-docker/docker-stack.yml --output ./backend/docker-stack.yml
 mkdir ./backend/secrets
 cp -r ./secrets ./backend/
 cd ./backend
