@@ -7,11 +7,11 @@ server:
   port: 443
   ssl:
     enabled: true
-    key-alias: ${cipher_keyAlias}
-    key-store-password: ${cipher_keyStorePassword}
-    key-store: ${cipher_keyStore}
+    key-alias: ${ssl_keyAlias}
+    key-store-password: ${ssl_keyStorePassword}
+    key-store: ${ssl_keyStore}
     key-store-type: JKS
-    key-password: ${cipher_keyPassword}
+    key-password: ${ssl_keyPassword}
 
 spring:
   config:
