@@ -1,20 +1,18 @@
 package ru.kyamshanov.mission.plugins
 
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.freemarker.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
-import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.kyamshanov.mission.tables.*
+import ru.kyamshanov.mission.utils.secret
 
 fun Application.dbConnect() {
-    val databaseUrl = environment.config.property("database.postgresql.url").getString()
-    val databaseUser = environment.config.property("database.postgresql.user").getString()
-    val databasePassword = environment.config.property("database.postgresql.password").getString()
+    val databaseUrl = environment.config.secret("database.postgresql.url")
+    val databaseUser = environment.config.secret("database.postgresql.user")
+    val databasePassword = environment.config.secret("database.postgresql.password")
 
     Database.connect(
         driver = "org.postgresql.Driver",

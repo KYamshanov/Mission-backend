@@ -20,13 +20,15 @@ import ru.kyamshanov.mission.identification.GithubIdentification
 import ru.kyamshanov.mission.identification.IdentificationServiceFactoryImpl
 import ru.kyamshanov.mission.plugins.*
 import ru.kyamshanov.mission.security.SymmetricCipher
+import ru.kyamshanov.mission.utils.secret
 import java.io.FileInputStream
 import java.security.KeyStore
+
 
 /**
  * Main function for initialize application
  */
-fun main(args: Array<String>): Unit = EngineMain.main(args)
+fun main(args: Array<String>) = EngineMain.main(args)
 
 
 /**
@@ -47,11 +49,11 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     configureSession()
     freeMarker()
 
-    val issuer = this.environment.config.property("oauth.issuer").getString()
-    val tokenKeyAlias = this.environment.config.property("oauth.security.cipher.keyAlias").getString()
-    val tokenKeyPassword = this.environment.config.property("oauth.security.cipher.keyPassword").getString()
-    val tokenKeyStore = this.environment.config.property("oauth.security.cipher.keyStore").getString()
-    val tokenKeyStorePassword = this.environment.config.property("oauth.security.cipher.keyStorePassword").getString()
+    val issuer = this.environment.config.secret("oauth.issuer")
+    val tokenKeyAlias = this.environment.config.secret("oauth.security.cipher.keyAlias")
+    val tokenKeyPassword = this.environment.config.secret("oauth.security.cipher.keyPassword")
+    val tokenKeyStore = this.environment.config.secret("oauth.security.cipher.keyStore")
+    val tokenKeyStorePassword = this.environment.config.secret("oauth.security.cipher.keyStorePassword")
 
     val tokenCipher = SymmetricCipher(
         KeyStore.getInstance(KeyStore.getDefaultType())
@@ -65,8 +67,8 @@ fun Application.module(httpClient: HttpClient = applicationHttpClient) {
     val authorizationRepository = AuthorizationDatabaseRepository()
     val userRepository = UserDatabaseRepository()
 
-    val clientId = this.environment.config.property("oauth.github.clientId").getString()
-    val clientSecret = this.environment.config.property("oauth.github.clientSecret").getString()
+    val clientId = this.environment.config.secret("oauth.github.clientId")
+    val clientSecret = this.environment.config.secret("oauth.github.clientSecret")
 
     val identificationServiceFactory = IdentificationServiceFactoryImpl(
         githubIdentification = GithubIdentification(

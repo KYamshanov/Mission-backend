@@ -4,6 +4,7 @@ logging.level:
   org.springframework.web.reactive.function.client: TRACE
 
 server:
+  port: 443
   ssl:
     enabled: true
     key-alias: ${keyAlias}
@@ -13,6 +14,8 @@ server:
     key-password: ${privateKeyPassword}
 
 spring:
+  config:
+    import: 'optional:configtree:/run/secrets/'
   security:
     oauth2:
       resourceserver:

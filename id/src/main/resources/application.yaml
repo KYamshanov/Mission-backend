@@ -1,13 +1,13 @@
 ktor:
   deployment:
-    port: $SERVER_PORT
-    sslPort: $SSL_PORT
+    port: 80
+    sslPort: 443
   security:
     ssl:
-      keyStore: $keyStore
-      keyAlias: $keyAlias
-      keyStorePassword: $keyStorePassword
-      privateKeyPassword: $privateKeyPassword
+      keyStore: "$keyStore:SECRET_ssl_keyStore"
+      keyAlias: "$keyAlias:SECRET_ssl_keyAlias"
+      keyStorePassword: "$keyStorePassword:SECRET_ssk_keyStorePassword"
+      privateKeyPassword: "$privateKeyPassword:SECRET_ssk_keyPassword"
   application:
     modules:
       - ru.kyamshanov.mission.ApplicationKt.module
@@ -15,16 +15,16 @@ oauth:
   issuer: "http://auth"
   security:
     cipher:
-      keyAlias: $tokenKeyAlias
-      keyPassword: $tokenKeyPassword
-      keyStore: $tokenKeyStore
-      keyStorePassword: $tokenKeyStorePassword
+      keyAlias: "$tokenKeyAlias:SECRET_cipher_keyAlias"
+      keyPassword: "$tokenKeyPassword:SECRET_cipher_keyPassword"
+      keyStore: "$tokenKeyStore:SECRET_cipher_keyStore"
+      keyStorePassword: "$tokenKeyStorePassword:SECRET_cipher_keyStorePassword"
   github:
-    urlProvider: $githubUrlProvider
-    clientId: $clientId
-    clientSecret: $clientSecret
+    urlProvider: "$githubUrlProvider:SECRET_github_urlProvider"
+    clientId: "$clientId:SECRET_github_clientId"
+    clientSecret: "$clientSecret:SECRET_github_clientSecret"
 database:
   postgresql:
-    url: $postgresql_url
-    user: $postgresql_user
-    password: $postgresql_password
+    url: "$postgresql_url:SECRET_postgres_url"
+    user: "$postgresql_user:SECRET_postgres_user"
+    password: "$postgresql_password:SECRET_postgres_password"

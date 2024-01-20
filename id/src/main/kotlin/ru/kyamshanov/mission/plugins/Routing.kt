@@ -14,12 +14,13 @@ import ru.kyamshanov.mission.client.models.SocialService
 import ru.kyamshanov.mission.dto.JwkDto
 import ru.kyamshanov.mission.dto.JwksRsDto
 import ru.kyamshanov.mission.dto.OpenIdConfigRsDto
+import ru.kyamshanov.mission.utils.secret
 
 
 fun Application.configureRouting(httpClient: HttpClient, authInterceptor: AuthInterceptor) {
     routing {
         get("/.well-known/openid-configuration") {
-            val issuer = this@configureRouting.environment.config.property("oauth.issuer").getString()
+            val issuer = this@configureRouting.environment.config.secret("oauth.issuer")
             val response = OpenIdConfigRsDto(
                 issuer = issuer,
                 authorizationEndpoint = "$issuer/oauth2/authorize",

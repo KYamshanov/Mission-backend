@@ -11,4 +11,6 @@ ENV JAR_NAME=id-all.jar
 ENV APP_HOME=/app
 COPY --from=GRADLE /home/gradle/build/libs/$JAR_NAME $APP_HOME/
 WORKDIR $APP_HOME
-ENTRYPOINT exec java -jar ${JAR_NAME} --debug
+EXPOSE 80
+EXPOSE 443
+ENTRYPOINT exec java -jar ${JAR_NAME}
