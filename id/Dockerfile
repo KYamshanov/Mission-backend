@@ -10,7 +10,6 @@ FROM eclipse-temurin:21-jre-alpine
 ENV JAR_NAME=id-all.jar
 ENV APP_HOME=/app
 COPY --from=GRADLE /home/gradle/build/libs/$JAR_NAME $APP_HOME/
-WORKDIR $APP_HOME
 EXPOSE 80
 EXPOSE 443
-ENTRYPOINT exec java -jar ${JAR_NAME}
+ENTRYPOINT exec java -jar $APP_HOME/${JAR_NAME}

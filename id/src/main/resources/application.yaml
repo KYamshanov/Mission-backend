@@ -6,8 +6,8 @@ ktor:
     ssl:
       keyStore: "$keyStore:SECRET_ssl_keyStore"
       keyAlias: "$keyAlias:SECRET_ssl_keyAlias"
-      keyStorePassword: "$keyStorePassword:SECRET_ssk_keyStorePassword"
-      privateKeyPassword: "$privateKeyPassword:SECRET_ssk_keyPassword"
+      keyStorePassword: "$keyStorePassword:SECRET_ssl_keyStorePassword"
+      privateKeyPassword: "$privateKeyPassword:SECRET_ssl_keyPassword"
   application:
     modules:
       - ru.kyamshanov.mission.ApplicationKt.module
@@ -25,6 +25,6 @@ oauth:
     clientSecret: "$clientSecret:SECRET_github_clientSecret"
 database:
   postgresql:
-    url: "$postgresql_url:SECRET_postgres_url"
-    user: "$postgresql_user:SECRET_postgres_user"
-    password: "$postgresql_password:SECRET_postgres_password"
+    url: "$postgresql_url:SECRET_postgresql_url"
+    user: "$postgresql_user:SECRET_postgresql_user"
+    password: "$postgresql_password:SECRET_postgresql_password"
