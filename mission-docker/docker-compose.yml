@@ -25,7 +25,6 @@ services:
     networks:
       - database_postgres
       - gateway
-      - gw_bridge
   gateway:
     image: missionapps/gateway:latest
     ports:
@@ -53,8 +52,6 @@ networks:
   database_postgres:
     external: true
   gateway:
-    driver: bridge
-  gw_bridge:
     driver: bridge
     driver_opts:
       com.docker.network.driver.mtu: 1450
