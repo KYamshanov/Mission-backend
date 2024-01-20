@@ -4,23 +4,21 @@ import io.ktor.server.config.*
 import java.nio.file.Files
 import java.util.stream.Collectors
 import kotlin.io.path.Path
-import kotlin.io.path.extension
 import kotlin.io.path.name
-import kotlin.io.path.readLines
+import kotlin.io.path.readText
 
 
-private val secrets: Map<String, String> =
+private val secrets: Map<String, Lazy<String>> =
     Files.walk(Path("/run/secrets"))
         .filter { item -> Files.isRegularFile(item) }
-        .filter { item -> item.extension.isEmpty() }
         .map { item ->
             val variableName = item.name.also { println("Adding $it secret") }
-            val fileValue = item.readLines().joinToString("\n")
+            val fileValue = lazy { item.readText() }
             variableName to fileValue
         }.collect(Collectors.toMap({ key -> key.first }, { value -> value.second }))
 
-private fun getSecret(secretKey: String) =
-    secrets[secretKey] ?: throw IllegalStateException("Secret has not found by key $secretKey")
+private fun getSecret(secretKey: String): String =
+    secrets[secretKey]?.value ?: throw IllegalStateException("Secret has not found by key $secretKey")
 
 /**
  * Support for obtain property using environment or get sensitive data using docker secrets
