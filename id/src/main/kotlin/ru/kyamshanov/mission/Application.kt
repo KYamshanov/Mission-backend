@@ -21,6 +21,7 @@ import ru.kyamshanov.mission.identification.IdentificationServiceFactoryImpl
 import ru.kyamshanov.mission.plugins.*
 import ru.kyamshanov.mission.security.SymmetricCipher
 import ru.kyamshanov.mission.utils.secret
+import ru.kyamshanov.mission.utils.sslSecretsProperies
 import java.io.FileInputStream
 import java.security.KeyStore
 
@@ -28,7 +29,7 @@ import java.security.KeyStore
 /**
  * Main function for initialize application
  */
-fun main(args: Array<String>) = EngineMain.main(args)
+fun main(args: Array<String>) = EngineMain.main(args + sslSecretsProperies())
 
 
 /**
