@@ -1,0 +1,93 @@
+version: "3.8"
+
+services:
+  auth:
+    image: missionapps/id:latest
+    ports:
+      - "6543:443"
+    secrets:
+      - postgresql_url
+      - postgresql_user
+      - postgresql_password
+      - ssl_keyStore
+      - ssl_keyAlias
+      - ssl_keyStorePassword
+      - ssl_keyPassword
+      - cipher_keyStore
+      - cipher_keyAlias
+      - cipher_keyStorePassword
+      - cipher_keyPassword
+      - github_urlProvider
+      - github_clientId
+      - github_clientSecret
+      - keystore_jks
+      - tokenkeystore_jks
+    networks:
+      - database_postgres
+      - gateway
+  gateway:
+    image: missionapps/gateway:latest
+    ports:
+      - "3456:443"
+    secrets:
+      - ssl_keyStore
+      - ssl_keyAlias
+      - ssl_keyStorePassword
+      - ssl_keyPassword
+      - keystore_jks
+    networks:
+      - gateway
+  point:
+    image: missionapps/point:latest
+    secrets:
+      - postgresql_url_r2dbc
+      - postgresql_user
+      - postgresql_password
+      - postgresql_db
+    networks:
+      - database_postgres
+      - gateway
+
+networks:
+  database_postgres:
+    external: true
+  gateway:
+    driver: overlay
+
+secrets:
+  cipher_keyAlias:
+    file: /secrets/cipher_keyAlias
+  cipher_keyPassword:
+    file: /secrets/cipher_keyPassword
+  cipher_keyStorePassword:
+    file: /secrets/cipher_keyStorePassword
+  github_clientId:
+    file: /secrets/github_clientId
+  github_clientSecret:
+    file: /secrets/github_clientSecret
+  github_urlProvider:
+    file: /secrets/github_urlProvider
+  cipher_keyStore:
+    file: /secrets/cipher_keyStore
+  ssl_keyStore:
+    file: /secrets/ssl_keyStore
+  ssl_keyPassword:
+    file: /secrets/ssk_keyPassword
+  ssl_keyStorePassword:
+    file: /secrets/ssk_keyStorePassword
+  ssl_keyAlias:
+    file: /secrets/ssl_keyAlias
+  postgresql_password:
+    file: /secrets/postgres_password
+  postgresql_db:
+    file: /secrets/postgres_db
+  postgresql_url:
+    file: /secrets/postgres_url
+  postgresql_url_r2dbc:
+    file: /secrets/postgres_url_r2dbc
+  postgresql_user:
+    file: /secrets/postgres_user
+  keystore_jks:
+    file: /secrets/keystore.jks
+  tokenkeystore_jks:
+    file: /secrets/tokenkeystore.jks

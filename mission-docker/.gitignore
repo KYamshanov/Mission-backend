@@ -1,3 +1,5 @@
 /.idea
 .env
 *.jks
+/secrets/github_clientId
+/secrets/github_clientSecret
