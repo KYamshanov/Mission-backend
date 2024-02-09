@@ -9,7 +9,7 @@ import kotlin.io.path.readText
 
 
 private val secrets: Map<String, Lazy<String>> =
-    Files.walk(Path("/run/secrets"))
+    Files.walk(Path(System.getenv("SECRETS_PATH") ?: "/run/secrets"))
         .filter { item -> Files.isRegularFile(item) }
         .map { item ->
             val variableName = item.name.also { println("Adding $it secret") }
