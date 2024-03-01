@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-gateway
+  labels:
+    app: backend-gateway-deployment
+spec:
+  selector:
+    matchLabels:
+      app: backend-gateway-deployment
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-gateway-deployment
+    spec:
+      containers:
+        - image: missionapps/gateway:latest
+          name: gateway
+          ports:
+            - containerPort: 443
+              name: gateway-https
+          volumeMounts:
+            - name: secrets
+              mountPath: /run/secrets/ssl_keyStore
+              subPath: ssl_keyStore
+            - name: secrets
+              mountPath: /run/secrets/ssl_keyAlias
+              subPath: ssl_keyAlias
+            - name: secrets
+              mountPath: /run/secrets/ssl_keyStorePassword
+              subPath: ssl_keyStorePassword
+            - name: secrets
+              mountPath: /run/secrets/ssl_keyPassword
+              subPath: ssl_keyPassword
+            - name: secrets
+              mountPath: /run/secrets/keystore_jks
+              subPath: keystore_jks
+      volumes:
+        - name: secrets
+          secret:
+            secretName: mission-secrets
+            items:
+              - key: ssl_keyStore
+                path: ssl_keyStore
+              - key: ssl_keyAlias
+                path: ssl_keyAlias
+              - key: ssk_keyStorePassword
+                path: ssl_keyStorePassword
+              - key: ssk_keyPassword
+                path: ssl_keyPassword
+              - key: keystore.jks
+                path: keystore_jks

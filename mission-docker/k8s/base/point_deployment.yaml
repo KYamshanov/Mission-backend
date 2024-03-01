@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-point
+  labels:
+    app: backend-point-deployment
+spec:
+  selector:
+    matchLabels:
+      app: backend-point-deployment
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-point-deployment
+    spec:
+      containers:
+        - image: missionapps/point:latest
+          name: point
+          ports:
+            - containerPort: 80
+              name: point-http
+          volumeMounts:
+            - name: secrets
+              mountPath: /run/secrets/postgresql_url_r2dbc
+              subPath: postgresql_url_r2dbc
+            - name: secrets
+              mountPath: /run/secrets/postgresql_user
+              subPath: postgresql_user
+            - name: secrets
+              mountPath: /run/secrets/postgresql_password
+              subPath: postgresql_password
+            - name: secrets
+              mountPath: /run/secrets/postgresql_db
+              subPath: postgresql_db
+      volumes:
+        - name: secrets
+          secret:
+            secretName: mission-secrets
+            items:
+              - key: postgres_url_r2dbc
+                path: postgresql_url_r2dbc
+              - key: postgres_user
+                path: postgresql_user
+              - key: postgres_password
+                path: postgresql_password
+              - key: postgres_db
+                path: postgresql_db

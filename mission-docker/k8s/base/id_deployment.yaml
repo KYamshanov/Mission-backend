@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-id
+  labels:
+    app: backend-id-deployment
+spec:
+  selector:
+    matchLabels:
+      app: backend-id-deployment
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-id-deployment
+    spec:
+      containers:
+        - image: missionapps/id:latest
+          name: id
+          env:
+            - name: SECRETS_PATH
+              value: "/run/secrets/id"
+            - name: keyStore
+              value: "run/secrets/id/keystore_jks"
+            - name: tokenKeyStore
+              value: "run/secrets/id/tokenkeystore_jks"
+          ports:
+            - containerPort: 80
+              name: id-http
+            - containerPort: 443
+              name: id-https
+          volumeMounts:
+            - name: secrets
+              mountPath: /run/secrets/id/postgresql_url
+              subPath: postgresql_url
+            - name: secrets
+              mountPath: /run/secrets/id/postgresql_user
+              subPath: postgresql_user
+            - name: secrets
+              mountPath: /run/secrets/id/postgresql_password
+              subPath: postgresql_password
+            - name: secrets
+              mountPath: /run/secrets/id/ssl_keyStorePassword
+              subPath: ssl_keyStorePassword
+            - name: secrets
+              mountPath: /run/secrets/id/ssl_keyPassword
+              subPath: ssl_keyPassword
+            - name: secrets
+              mountPath: /run/secrets/id/ssl_keyAlias
+              subPath: ssl_keyAlias
+            - name: secrets
+              mountPath: /run/secrets/id/cipher_keyAlias
+              subPath: cipher_keyAlias
+            - name: secrets
+              mountPath: /run/secrets/id/cipher_keyStorePassword
+              subPath: cipher_keyStorePassword
+            - name: secrets
+              mountPath: /run/secrets/id/cipher_keyPassword
+              subPath: cipher_keyPassword
+            - name: secrets
+              mountPath: /run/secrets/id/github_urlProvider
+              subPath: github_urlProvider
+            - name: secrets
+              mountPath: /run/secrets/id/github_clientId
+              subPath: github_clientId
+            - name: secrets
+              mountPath: /run/secrets/id/github_clientSecret
+              subPath: github_clientSecret
+            - name: secrets
+              mountPath: /run/secrets/id/keystore_jks
+              subPath: keystore_jks
+            - name: secrets
+              mountPath: /run/secrets/id/tokenkeystore_jks
+              subPath: tokenkeystore_jks
+      volumes:
+        - name: secrets
+          secret:
+            secretName: mission-secrets
+            items:
+              - key: postgres_url
+                path: postgresql_url
+              - key: postgres_user
+                path: postgresql_user
+              - key: postgres_password
+                path: postgresql_password
+              - key: ssl_keyAlias
+                path: ssl_keyAlias
+              - key: ssk_keyStorePassword
+                path: ssl_keyStorePassword
+              - key: ssk_keyPassword
+                path: ssl_keyPassword
+              - key: cipher_keyAlias
+                path: cipher_keyAlias
+              - key: cipher_keyStorePassword
+                path: cipher_keyStorePassword
+              - key: cipher_keyPassword
+                path: cipher_keyPassword
+              - key: github_urlProvider
+                path: github_urlProvider
+              - key: github_clientId
+                path: github_clientId
+              - key: github_clientSecret
+                path: github_clientSecret
+              - key: keystore.jks
+                path: keystore_jks
+              - key: tokenkeystore.jks
+                path: tokenkeystore_jks

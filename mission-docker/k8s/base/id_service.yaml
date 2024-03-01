@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: b-id-hs-s
+  annotations:
+    owner: kyamshanov
+    description: Backend Id Service https
+spec:
+  type: LoadBalancer
+  selector:
+    app: backend-id-deployment
+  ports:
+    - name: backend-id-port
+      protocol: TCP
+      port: 6543
+      targetPort: id-https
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  annotations:
+    owner: kyamshanov
+    description: Backend Id Service http
+spec:
+  type: ClusterIP
+  selector:
+    app: backend-id-deployment
+  ports:
+    - name: id-http-port
+      protocol: TCP
+      port: 80
+      targetPort: id-http

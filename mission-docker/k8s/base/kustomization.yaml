@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - gateway_deployment.yaml
+  - gateway_service.yaml
+  - id_deployment.yaml
+  - id_service.yaml
+  - point_deployment.yaml
+  - point_server.yaml
+
+secretGenerator:
+  - name: postgres-secret
+    files:
+      - secrets/cipher_keyAlias
+      - secrets/cipher_keyPassword
+      - secrets/cipher_keyStore
+      - secrets/cipher_keyStorePassword
+      - secrets/github_clientId
+      - secrets/github_clientSecret
+      - secrets/github_urlProvider
+      - secrets/keystore.jks
+      - secrets/postgres_db
+      - secrets/postgres_password
+      - secrets/postgres_url
+      - secrets/postgres_url_r2dbc
+      - secrets/postgres_user
+      - secrets/ssk_keyPassword
+      - secrets/ssk_keyStorePassword
+      - secrets/ssl_keyAlias
+      - secrets/ssl_keyStore
+      - secrets/tokenkeystore.jks
