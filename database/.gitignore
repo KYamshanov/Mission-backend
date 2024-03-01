@@ -4,3 +4,4 @@
 .fleet
 /.idea
 *.jks
+/k8s/overlays/docker-desktop/private*

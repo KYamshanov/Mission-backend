@@ -5,17 +5,17 @@ if [ ! -d ./assets ]; then
     exit
 fi
 
-if [ ! -f postgres_db.txt ]; then
+if [ ! -f postgres_db ]; then
     echo "File postgres_db.txt not found!"
     exit
 fi
 
-if [ ! -f postgres_user.txt ]; then
+if [ ! -f postgres_user ]; then
     echo "File postgres_user.txt not found!"
     exit
 fi
 
-if [ ! -f postgres_password.txt ]; then
+if [ ! -f postgres_password ]; then
     echo "File postgres_password.txt not found!"
     exit
 fi
@@ -23,9 +23,9 @@ fi
 mkdir ./database
 export assets="../assets"
 curl https://raw.githubusercontent.com/KYamshanov/Mission-backend/develop/database/docker-compose.yml --output ./database/docker-compose.yml
-cp postgres_db.txt ./database/postgres_db.txt
-cp postgres_user.txt ./database/postgres_user.txt
-cp postgres_password.txt ./database/postgres_password.txt
+cp postgres_db ./database/postgres_db
+cp postgres_user ./database/postgres_user
+cp postgres_password ./database/postgres_password
 cd ./database
 docker compose up --detach
 cd ..

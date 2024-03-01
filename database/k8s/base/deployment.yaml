@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-d
+  labels:
+    app: postgres-deployment
+spec:
+  selector:
+    matchLabels:
+      app: postgres-deployment
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres-deployment
+    spec:
+      containers:
+        - image: postgres:14
+          name: postgres
+          env:
+            - name: POSTGRES_DB_FILE
+              value: /run/secrets/db/postgres_db
+            - name: POSTGRES_USER_FILE
+              value: /run/secrets/db/postgres_user
+            - name: POSTGRES_PASSWORD
+              value: /run/secrets/db/postgres_password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+              name: postgres-port
+          volumeMounts:
+            - name: postgres-data-persistent-storage
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-init-persistent-storage
+              mountPath: /docker-entrypoint-initdb.d
+            - name: secrets
+              mountPath: /run/secrets/db/
+              readOnly: true
+      nodeSelector:
+        kubernetes.io/hostname: docker-desktop
+      volumes:
+        - name: postgres-data-persistent-storage
+          persistentVolumeClaim:
+            claimName: p-d-pvc
+        - name: postgres-init-persistent-storage
+          persistentVolumeClaim:
+            claimName: p-is-pvc
+        - name: secrets
+          secret:
+            secretName: postgres-secret

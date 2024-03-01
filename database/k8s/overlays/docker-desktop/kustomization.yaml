@@ -1,0 +1,6 @@
+resources:
+  - ../../base
+
+patches:
+  - path: private-pv-database.yaml
+  - path: private-pv-init-db.yaml
