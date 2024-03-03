@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-id
+  labels:
+    app: backend-id-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - image: missionapps/id:latest
+          name: id
+          ports:
+            - containerPort: 80
+              name: id-http
+            - containerPort: 443
+              name: id-https
+              hostPort: 6543

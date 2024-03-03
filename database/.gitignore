@@ -5,3 +5,4 @@
 /.idea
 *.jks
 /k8s/overlays/docker-desktop/private*
+/k8s/overlays/kubeadm/private*

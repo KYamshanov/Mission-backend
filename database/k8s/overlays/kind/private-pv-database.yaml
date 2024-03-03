@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: p-d-pv
+spec:
+  local:
+    path: /d/undfr/projects/IDEA/Mission-backend/database/assets/db_data/postgres

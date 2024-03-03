@@ -24,7 +24,7 @@ spec:
               value: /run/secrets/db/postgres_db
             - name: POSTGRES_USER_FILE
               value: /run/secrets/db/postgres_user
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRES_PASSWORD_FILE
               value: /run/secrets/db/postgres_password
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata

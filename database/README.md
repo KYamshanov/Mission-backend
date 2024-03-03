@@ -7,7 +7,7 @@ Database data by default lie in `/assets/db_data` folder
 
 Docker-compose для запуска центарлизованной БД
 
-Для подключения к БД : psql -U postgres -h localhost postgres
+Для подключения к БД : `psql -U postgres -h localhost postgres`
 
 # Kubernetes
 Project use k8s and kustomization for declare deployment items (see [k8s readme](k8s/README.md))

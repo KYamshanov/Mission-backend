@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-gateway
+  labels:
+    app: backend-gateway-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - image: missionapps/gateway:latest
+          name: gateway
+          ports:
+            - containerPort: 443
+              name: gateway-https
+              hostPort: 3456

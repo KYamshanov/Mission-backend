@@ -1,0 +1,6 @@
+resources:
+  - ../../base
+
+patches:
+  - path: gateway_deployment.yaml
+  - path: id_deployment.yaml

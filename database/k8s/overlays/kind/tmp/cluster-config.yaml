@@ -1,0 +1,16 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: ${REALPATH_ASSETS}
+        containerPath: ${REALPATH_ASSETS}
+    extraPortMappings:
+      - containerPort: 3456
+        hostPort: 3456
+        listenAddress: "0.0.0.0" # Optional, defaults to "0.0.0.0"
+        protocol: tcp # Optional, defaults to tcp
+      - containerPort: 6543
+        hostPort: 6543
+        listenAddress: "0.0.0.0" # Optional, defaults to "0.0.0.0"
+        protocol: tcp # Optional, defaults to tcp

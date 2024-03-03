@@ -9,7 +9,7 @@ resources:
   - point_server.yaml
 
 secretGenerator:
-  - name: postgres-secret
+  - name: mission-secrets
     files:
       - secrets/cipher_keyAlias
       - secrets/cipher_keyPassword
