@@ -88,3 +88,10 @@ CREATE TABLE task_label
     task_id  VARCHAR(32) NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
     label_id VARCHAR(32) NOT NULL REFERENCES label (id) ON DELETE CASCADE
 );
+
+
+alter table tasks
+    add deleted bool default false not null;
+
+comment on column tasks.deleted is 'whether the task has been deleted';
+

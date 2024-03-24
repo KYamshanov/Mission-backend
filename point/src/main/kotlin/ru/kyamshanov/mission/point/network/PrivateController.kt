@@ -28,7 +28,8 @@ class PrivateController(
         @RequestHeader(value = "\${USER_ID_HEADER_KEY}", required = true) userId: String,
     ): ResponseEntity<AttachedTasksResponseDto> {
         //TODO Рефакторинг. Also see: https://github.com/KYamshanov/Mission-backend/issues/19
-        val tasksMap = taskCrudRepository.getAllByOwner(userId).toCollection(mutableListOf()).associateBy { it.id }
+        val tasksMap =
+            taskCrudRepository.getAllByOwnerAndAndDeleted(userId, false).toCollection(mutableListOf()).associateBy { it.id }
         val orderedTasks = if (tasksMap.isNotEmpty()) {
             val order = taskOrderCrudRepository.selectAll(userId).toCollection(mutableListOf())
             val sortedTasks = tasksMap.values.toMutableList().apply {
@@ -42,7 +43,7 @@ class PrivateController(
             val linkedList = MovableLinkedList(sortedTasks.map { it.id })
             val orderN = order.map { MutablePair(it, true) }.associateBy { it.first.next }.toMutableMap()
 
-            orderN.forEach { t: String?, u ->
+            orderN.forEach { (_: String?, u) ->
                 if (u.second) muve(linkedList, u, orderN)
             }
 
@@ -125,19 +126,19 @@ class PrivateController(
     ): ResponseEntity<GetTaskRsDto> {
         return ResponseEntity(
             (taskCrudRepository.findById(id) ?: throw IllegalArgumentException("Task was not found"))
-                .let {
+                .let { entity ->
                     GetTaskRsDto(
-                        id = it.id,
-                        title = it.title,
-                        creationTime = it.creationTime,
-                        completionTime = it.completionTime,
-                        priority = it.priority,
-                        status = it.status,
-                        description = it.description,
-                        updateTime = it.updateTime,
-                        type = it.type.toDto(),
-                        editingRules = EditingRulesDto(isEditable = it.owner == userId),
-                        labels = labelQueryRepository.selectByTaskId(it.id, userId).toCollection(mutableListOf())
+                        id = entity.id,
+                        title = entity.title,
+                        creationTime = entity.creationTime,
+                        completionTime = entity.completionTime,
+                        priority = entity.priority,
+                        status = entity.status,
+                        description = entity.description,
+                        updateTime = entity.updateTime,
+                        type = entity.type.toDto(),
+                        editingRules = EditingRulesDto(isEditable = entity.owner == userId),
+                        labels = labelQueryRepository.selectByTaskId(entity.id, userId).toCollection(mutableListOf())
                             .map { it.toDto() }
                     )
                 },

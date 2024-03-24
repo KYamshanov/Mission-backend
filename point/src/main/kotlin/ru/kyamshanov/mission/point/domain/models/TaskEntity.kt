@@ -27,6 +27,8 @@ data class TaskEntity(
     val owner: String,
     @Column("type")
     val type: TaskType? = null,
+    @Column("deleted")
+    val deleted: Boolean = false,
 
     /** Первичный ключ - Идентификатор */
     @Id

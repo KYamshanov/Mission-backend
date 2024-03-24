@@ -12,11 +12,13 @@ import ru.kyamshanov.mission.point.domain.models.TaskType
 
 interface TaskCrudRepository : CoroutineCrudRepository<TaskEntity, String> {
 
-    fun getAllByOwner(ownerId: String): Flow<TaskEntity>
+    fun getAllByOwnerAndAndDeleted(ownerId: String, deleted: Boolean): Flow<TaskEntity>
 
     suspend fun getFirstByOwnerAndId(ownerId: String, id: String): TaskEntity?
 
 
+    @Modifying
+    @Query("update tasks set deleted = true where id = :taskId and owner = :ownerId RETURNING *;")
     suspend fun deleteByIdAndOwner(id: String, owner: String)
 
     @Modifying
